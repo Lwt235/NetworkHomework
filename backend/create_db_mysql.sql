@@ -9,6 +9,10 @@ CREATE DATABASE IF NOT EXISTS network_monitor
 
 -- Create a database user (optional, but recommended)
 -- 创建数据库用户（可选，但推荐）
+-- IMPORTANT: Replace 'your_secure_password_here' with a strong password
+-- 重要：将 'your_secure_password_here' 替换为强密码
+-- Password requirements: At least 12 characters, including uppercase, lowercase, numbers, and special characters
+-- 密码要求：至少12个字符，包括大写字母、小写字母、数字和特殊字符
 CREATE USER IF NOT EXISTS 'network_monitor_user'@'localhost' 
     IDENTIFIED BY 'your_secure_password_here';
 
@@ -18,6 +22,8 @@ GRANT ALL PRIVILEGES ON network_monitor.* TO 'network_monitor_user'@'localhost';
 
 -- If you need to allow remote connections, create another user
 -- 如果需要允许远程连接，创建另一个用户
+-- IMPORTANT: Replace 'your_secure_password_here' with a strong password
+-- 重要：将 'your_secure_password_here' 替换为强密码
 -- CREATE USER IF NOT EXISTS 'network_monitor_user'@'%' 
 --     IDENTIFIED BY 'your_secure_password_here';
 -- GRANT ALL PRIVILEGES ON network_monitor.* TO 'network_monitor_user'@'%';

@@ -106,6 +106,11 @@ def show_info():
                 print(f"  • {table_name:20} ({chinese_name})")
             
             print("\n" + "="*60)
+        except ImportError as e:
+            print(f"Error: Could not import database models: {e}")
+            print(f"错误：无法导入数据库模型: {e}")
+            print("Please ensure models.py is properly configured.")
+            print("请确保 models.py 已正确配置。")
         except Exception as e:
             print(f"Error getting table information: {e}")
             print(f"获取表信息时出错: {e}")

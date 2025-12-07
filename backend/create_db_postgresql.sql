@@ -14,6 +14,10 @@ CREATE DATABASE network_monitor
 
 -- Create a database user (optional, but recommended)
 -- 创建数据库用户（可选，但推荐）
+-- IMPORTANT: Replace 'your_secure_password_here' with a strong password
+-- 重要：将 'your_secure_password_here' 替换为强密码
+-- Password requirements: At least 12 characters, including uppercase, lowercase, numbers, and special characters
+-- 密码要求：至少12个字符，包括大写字母、小写字母、数字和特殊字符
 CREATE USER network_monitor_user WITH PASSWORD 'your_secure_password_here';
 
 -- Grant privileges to the user
