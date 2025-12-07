@@ -54,6 +54,19 @@
       <el-col :span="24">
         <el-card>
           <template #header>
+            <span>系统资源趋势图</span>
+          </template>
+          <div style="height: 400px; padding: 10px;">
+            <SystemResourceChart :history-data="systemHistoryData" title="CPU、内存、磁盘使用率" />
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+    
+    <el-row :gutter="20" style="margin-top: 20px;">
+      <el-col :span="24">
+        <el-card>
+          <template #header>
             <span>警报管理</span>
           </template>
           
@@ -189,6 +202,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { monitoringAPI } from '@/services/api'
 import TrafficChart from '@/components/TrafficChart.vue'
+import SystemResourceChart from '@/components/SystemResourceChart.vue'
 
 const timeRange = ref(24)
 const totalBytesSent = ref(0)
@@ -199,6 +213,7 @@ const alertTab = ref('active')
 const alerts = ref([])
 const systemStats = ref(null)
 const historyData = ref([])
+const systemHistoryData = ref([])
 const thresholds = ref({
   cpu: 80,
   memory: 80,
@@ -217,6 +232,10 @@ const loadData = async () => {
     totalBytesRecv.value = history.reduce((sum, log) => sum + log.bytes_recv, 0)
     totalPacketsSent.value = history.reduce((sum, log) => sum + log.packets_sent, 0)
     totalPacketsRecv.value = history.reduce((sum, log) => sum + log.packets_recv, 0)
+    
+    // Load system resource history
+    const systemResponse = await monitoringAPI.getSystemHistory({ hours: timeRange.value })
+    systemHistoryData.value = systemResponse.data.history
   } catch (error) {
     console.error('Failed to load analytics data:', error)
   }

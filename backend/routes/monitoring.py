@@ -111,3 +111,27 @@ def resolve_alert(alert_id):
         'message': 'Alert resolved successfully',
         'alert': alert.to_dict()
     }), 200
+
+
+@monitoring_bp.route('/system-history', methods=['GET'])
+@jwt_required()
+def get_system_history():
+    """Get historical system resource data"""
+    from models import SystemResourceLog
+    
+    # Get time range from query params
+    hours = request.args.get('hours', 24, type=int)
+    start_time = datetime.utcnow() - timedelta(hours=hours)
+    
+    # Get limit from config
+    from config import Config
+    limit = getattr(Config, 'MAX_HISTORY_RECORDS', 1000)
+    
+    logs = SystemResourceLog.query.filter(
+        SystemResourceLog.timestamp >= start_time
+    ).order_by(SystemResourceLog.timestamp.desc()).limit(limit).all()
+    
+    return jsonify({
+        'history': [log.to_dict() for log in logs],
+        'count': len(logs)
+    }), 200

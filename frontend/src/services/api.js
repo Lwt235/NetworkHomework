@@ -57,6 +57,7 @@ export const monitoringAPI = {
   getSystem: () => apiClient.get('/monitoring/system'),
   runSpeedTest: () => apiClient.post('/monitoring/speed-test'),
   getHistory: (params) => apiClient.get('/monitoring/history', { params }),
+  getSystemHistory: (params) => apiClient.get('/monitoring/system-history', { params }),
   getAlerts: (params) => apiClient.get('/monitoring/alerts', { params }),
   resolveAlert: (id) => apiClient.put(`/monitoring/alerts/${id}/resolve`)
 }

@@ -70,6 +70,14 @@
                   <span>上传速度:</span>
                   <strong>{{ speedTestResult.upload_speed }} Mbps</strong>
                 </div>
+                <div class="speed-item" v-if="speedTestResult.ping">
+                  <span>延迟(Ping):</span>
+                  <strong>{{ speedTestResult.ping }} ms</strong>
+                </div>
+                <div class="speed-item" v-if="speedTestResult.server_location">
+                  <span>测速服务器:</span>
+                  <strong style="font-size: 12px;">{{ speedTestResult.server_location }}</strong>
+                </div>
               </div>
             </div>
           </div>

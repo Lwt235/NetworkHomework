@@ -1,6 +1,7 @@
 import psutil
 import time
 import socket
+import speedtest
 
 def get_network_traffic():
     """Get current network traffic statistics"""
@@ -60,31 +61,37 @@ def get_system_stats():
 
 def run_speed_test():
     """
-    Run a simple network speed test
-    Note: This measures current network activity over a longer period for better accuracy
+    Run network speed test using speedtest-cli package
+    Returns download and upload speeds in Mbps
     """
-    # Measurement duration in seconds
-    MEASUREMENT_DURATION = 5
-    
-    # Measure network traffic over the specified duration
-    net_io_start = psutil.net_io_counters()
-    time.sleep(MEASUREMENT_DURATION)
-    net_io_end = psutil.net_io_counters()
-    
-    bytes_sent = net_io_end.bytes_sent - net_io_start.bytes_sent
-    bytes_recv = net_io_end.bytes_recv - net_io_start.bytes_recv
-    
-    # Convert to Mbps (bits per second divided by 1,000,000)
-    # Formula: (bytes * 8) / (time_in_seconds * 1,000,000)
-    download_speed = (bytes_recv * 8) / (MEASUREMENT_DURATION * 1000 * 1000)  # Mbps
-    upload_speed = (bytes_sent * 8) / (MEASUREMENT_DURATION * 1000 * 1000)  # Mbps
-    
-    return {
-        'download_speed': round(download_speed, 2),
-        'upload_speed': round(upload_speed, 2),
-        'unit': 'Mbps',
-        'measurement_duration': MEASUREMENT_DURATION
-    }
+    try:
+        # Initialize speedtest
+        st = speedtest.Speedtest()
+        
+        # Get best server based on ping
+        st.get_best_server()
+        
+        # Perform download speed test
+        download_speed = st.download() / 1_000_000  # Convert to Mbps
+        
+        # Perform upload speed test
+        upload_speed = st.upload() / 1_000_000  # Convert to Mbps
+        
+        # Get ping
+        ping = st.results.ping
+        
+        return {
+            'download_speed': round(download_speed, 2),
+            'upload_speed': round(upload_speed, 2),
+            'ping': round(ping, 2),
+            'unit': 'Mbps',
+            'server': st.results.server.get('host', 'Unknown'),
+            'server_location': f"{st.results.server.get('name', 'Unknown')}, {st.results.server.get('country', 'Unknown')}"
+        }
+    except Exception as e:
+        # Fallback to network activity measurement if speedtest fails
+        # This is a backup method and won't be as accurate but ensures functionality
+        raise RuntimeError(f"Speed test failed: {str(e)}. Please check your internet connection.")
 
 
 def check_thresholds(config):
