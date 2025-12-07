@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, PacketCapture
-from services.capture import start_packet_capture, get_protocol_stats, check_capture_permissions
+from services.capture import start_packet_capture, get_protocol_stats, check_capture_permissions, get_packet_analysis
 from datetime import datetime, timedelta
 
 analysis_bp = Blueprint('analysis', __name__)
@@ -32,14 +32,21 @@ def capture_packets():
     protocol = data.get('protocol', 'all')  # tcp, udp, ip, or all
     count = data.get('count', 100)
     timeout = data.get('timeout', 10)
+    clear_previous = data.get('clear_previous', False)  # Whether to clear previous captures
     
     try:
+        # Clear previous captures if requested
+        if clear_previous:
+            deleted_count = PacketCapture.query.filter_by(user_id=user_id).delete()
+            db.session.commit()
+        
         packets = start_packet_capture(protocol=protocol, count=count, timeout=timeout, user_id=user_id)
         
         return jsonify({
             'message': 'Packet capture completed',
             'packets': packets,
-            'count': len(packets)
+            'count': len(packets),
+            'cleared_previous': clear_previous
         }), 200
     except PermissionError as e:
         return jsonify({
@@ -55,6 +62,28 @@ def capture_packets():
     except Exception as e:
         return jsonify({
             'error': 'Unexpected error',
+            'message': str(e)
+        }), 500
+
+
+@analysis_bp.route('/clear-packets', methods=['DELETE'])
+@jwt_required()
+def clear_packets():
+    """Clear all captured packets for the current user"""
+    user_id = int(get_jwt_identity())
+    
+    try:
+        deleted_count = PacketCapture.query.filter_by(user_id=user_id).delete()
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Packets cleared successfully',
+            'deleted_count': deleted_count
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'error': 'Failed to clear packets',
             'message': str(e)
         }), 500
 
@@ -101,9 +130,11 @@ def get_stats():
     # Get protocol statistics
     try:
         protocol_stats = get_protocol_stats(user_id, start_time)
+        packet_analysis = get_packet_analysis(user_id, start_time)
         
         return jsonify({
             'stats': protocol_stats,
+            'analysis': packet_analysis,
             'timestamp': datetime.utcnow().isoformat()
         }), 200
     except Exception as e:

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, TrafficLog, Alert
-from services.monitor import get_network_traffic, get_system_stats, run_speed_test
+from services.monitor import get_network_traffic, get_system_stats, run_speed_test, get_network_load
 from datetime import datetime, timedelta
 
 monitoring_bp = Blueprint('monitoring', __name__)
@@ -42,6 +42,20 @@ def speed_test():
         results = run_speed_test()
         return jsonify({
             'results': results,
+            'timestamp': datetime.utcnow().isoformat()
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@monitoring_bp.route('/network-load', methods=['GET'])
+@jwt_required()
+def network_load():
+    """Get current network load metrics"""
+    try:
+        load_data = get_network_load()
+        return jsonify({
+            'load': load_data,
             'timestamp': datetime.utcnow().isoformat()
         }), 200
     except Exception as e:
