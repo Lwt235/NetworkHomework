@@ -7,39 +7,19 @@ This file provides quick reference commands for database setup.
 
 ## 快速开始 / Quick Start
 
-### SQLite（默认 / Default）
-
-```bash
-# 初始化数据库 / Initialize database
-python init_db.py init
-
-# 查看数据库信息 / View database info
-python init_db.py info
-```
-
-### PostgreSQL
-
-```bash
-# 1. 创建数据库 / Create database
-sudo -u postgres psql -f create_db_postgresql.sql
-
-# 2. 在 .env 文件中设置 / Set in .env file:
-DATABASE_URL=postgresql://network_monitor_user:your_password@localhost:5432/network_monitor
-
-# 3. 初始化表 / Initialize tables
-python init_db.py init
-```
-
 ### MySQL
 
 ```bash
 # 1. 创建数据库 / Create database
 mysql -u root -p < create_db_mysql.sql
 
-# 2. 在 .env 文件中设置 / Set in .env file:
-DATABASE_URL=mysql://network_monitor_user:your_password@localhost:3306/network_monitor
+# 2. 安装 MySQL 驱动 / Install MySQL driver
+pip install PyMySQL
 
-# 3. 初始化表 / Initialize tables
+# 3. 在 .env 文件中设置 / Set in .env file:
+DATABASE_URL=mysql+pymysql://network_monitor_user:your_password@localhost:3306/network_monitor
+
+# 4. 初始化表 / Initialize tables
 python init_db.py init
 ```
 
@@ -81,24 +61,6 @@ The application uses the following tables:
 
 ## 备份和恢复 / Backup and Restore
 
-### SQLite
-```bash
-# 备份 / Backup
-cp instance/network_monitor.db instance/network_monitor.db.backup
-
-# 恢复 / Restore
-cp instance/network_monitor.db.backup instance/network_monitor.db
-```
-
-### PostgreSQL
-```bash
-# 备份 / Backup
-pg_dump -U network_monitor_user network_monitor > backup.sql
-
-# 恢复 / Restore
-psql -U network_monitor_user network_monitor < backup.sql
-```
-
 ### MySQL
 ```bash
 # 备份 / Backup
@@ -113,7 +75,6 @@ mysql -u network_monitor_user -p network_monitor < backup.sql
 ## 文件说明 / File Descriptions
 
 - `init_db.py` - 数据库管理脚本 / Database management script
-- `create_db_postgresql.sql` - PostgreSQL 数据库创建脚本 / PostgreSQL database creation script
 - `create_db_mysql.sql` - MySQL 数据库创建脚本 / MySQL database creation script
 - `DATABASE_SETUP.md` - 完整的数据库设置指南 / Complete database setup guide
 
