@@ -100,7 +100,7 @@ def check_thresholds(config):
             'severity': 'warning'
         })
     
-    if stats['disk']['percent'] > config.NETWORK_THRESHOLD:
+    if stats['disk']['percent'] > config.DISK_THRESHOLD:
         alerts.append({
             'type': 'disk',
             'message': f"Disk usage is at {stats['disk']['percent']}%",

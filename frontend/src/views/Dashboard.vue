@@ -196,10 +196,15 @@ const loadData = async () => {
     recentAlerts.value = alertsRes.data.alerts.slice(0, 5)
     alertCount.value = alertsRes.data.count
     
-    // Load speed test (simulated)
-    const speedRes = await monitoringAPI.runSpeedTest()
-    uploadSpeed.value = speedRes.data.results.upload_speed
-    downloadSpeed.value = speedRes.data.results.download_speed
+    // Load speed test (simulated) - non-blocking
+    try {
+      const speedRes = await monitoringAPI.runSpeedTest()
+      uploadSpeed.value = speedRes.data.results.upload_speed
+      downloadSpeed.value = speedRes.data.results.download_speed
+    } catch (speedError) {
+      console.warn('Speed test failed:', speedError)
+      // Keep default values (0) if speed test fails
+    }
   } catch (error) {
     console.error('Failed to load dashboard data:', error)
   }

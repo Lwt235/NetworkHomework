@@ -52,6 +52,7 @@ def speed_test():
 @jwt_required()
 def get_history():
     """Get historical traffic data"""
+    from config import Config
     user_id = int(get_jwt_identity())
     
     # Get time range from query params
@@ -61,12 +62,15 @@ def get_history():
     # Get device_id if provided
     device_id = request.args.get('device_id', type=int)
     
+    # Get limit from config
+    limit = getattr(Config, 'MAX_HISTORY_RECORDS', 1000)
+    
     query = TrafficLog.query.filter(TrafficLog.timestamp >= start_time)
     
     if device_id:
         query = query.filter(TrafficLog.device_id == device_id)
     
-    logs = query.order_by(TrafficLog.timestamp.desc()).limit(1000).all()
+    logs = query.order_by(TrafficLog.timestamp.desc()).limit(limit).all()
     
     return jsonify({
         'history': [log.to_dict() for log in logs],

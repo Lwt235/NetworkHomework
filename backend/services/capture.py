@@ -98,7 +98,9 @@ def start_packet_capture(protocol='all', count=100, timeout=10, user_id=None):
         
     except Exception as e:
         # If permission denied or scapy not available, return mock data
-        print(f"Packet capture error: {e}")
+        import logging
+        logging.warning(f"Packet capture error: {e}. Using mock data instead.")
+        print(f"Warning: Packet capture failed ({e}). Using mock data for demonstration.")
         captured_packets = generate_mock_packets(count, protocol)
     
     return captured_packets

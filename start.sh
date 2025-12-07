@@ -37,6 +37,9 @@ if [ ! -f "venv/.installed" ]; then
     touch venv/.installed
 fi
 
+# Create logs directory if it doesn't exist
+mkdir -p ../logs
+
 # Start backend in background
 echo "Backend server starting at http://localhost:5000"
 python app.py > ../logs/backend.log 2>&1 &

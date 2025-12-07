@@ -25,6 +25,7 @@ class Config:
     # Alerts
     CPU_THRESHOLD = 80  # percentage
     MEMORY_THRESHOLD = 80  # percentage
+    DISK_THRESHOLD = 90  # percentage
     NETWORK_THRESHOLD = 90  # percentage
     
     # Packet Capture
