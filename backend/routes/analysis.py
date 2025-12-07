@@ -1,10 +1,25 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models import db, PacketCapture
-from services.capture import start_packet_capture, get_protocol_stats
+from services.capture import start_packet_capture, get_protocol_stats, check_capture_permissions
 from datetime import datetime, timedelta
 
 analysis_bp = Blueprint('analysis', __name__)
+
+
+@analysis_bp.route('/check-permissions', methods=['GET'])
+@jwt_required()
+def check_permissions():
+    """Check if the application has packet capture permissions"""
+    try:
+        result = check_capture_permissions()
+        status_code = 200 if result['has_permission'] else 403
+        return jsonify(result), status_code
+    except Exception as e:
+        return jsonify({
+            'error': 'Permission check failed',
+            'message': str(e)
+        }), 500
 
 @analysis_bp.route('/capture', methods=['POST'])
 @jwt_required()
@@ -26,8 +41,22 @@ def capture_packets():
             'packets': packets,
             'count': len(packets)
         }), 200
+    except PermissionError as e:
+        return jsonify({
+            'error': 'Permission denied',
+            'message': str(e),
+            'requires_elevated_privileges': True
+        }), 403
+    except RuntimeError as e:
+        return jsonify({
+            'error': 'Capture failed',
+            'message': str(e)
+        }), 500
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({
+            'error': 'Unexpected error',
+            'message': str(e)
+        }), 500
 
 
 @analysis_bp.route('/packets', methods=['GET'])

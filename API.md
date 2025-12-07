@@ -379,6 +379,47 @@ Authorization: Bearer <access_token>
 
 ## 分析端点 / Analysis Endpoints
 
+### 检查抓包权限 / Check Packet Capture Permissions
+
+**GET** `/analysis/check-permissions`
+
+检查应用是否有数据包捕获权限。
+
+**需要认证 / Requires Authentication**: Yes
+
+**响应 / Response** (200 OK - 有权限 / Has permissions):
+```json
+{
+  "has_permission": true,
+  "message": "Packet capture permissions are available"
+}
+```
+
+**响应 / Response** (403 Forbidden - 无权限 / No permissions):
+```json
+{
+  "has_permission": false,
+  "message": "Insufficient permissions for packet capture",
+  "instructions": {
+    "os": "Linux",
+    "methods": [
+      {
+        "method": "Grant capabilities to Python binary (recommended)",
+        "command": "sudo setcap cap_net_raw,cap_net_admin=eip /usr/bin/python3",
+        "description": "This allows Python to capture packets without running as root"
+      },
+      {
+        "method": "Run application as root (not recommended for production)",
+        "command": "sudo python3 app.py",
+        "description": "Run the entire application with root privileges"
+      }
+    ]
+  }
+}
+```
+
+详细的权限设置说明请参阅 [PACKET_CAPTURE_PERMISSIONS.md](PACKET_CAPTURE_PERMISSIONS.md)
+
 ### 开始抓包 / Start Packet Capture
 
 **POST** `/analysis/capture`
@@ -386,6 +427,8 @@ Authorization: Bearer <access_token>
 开始捕获网络数据包。
 
 **需要认证 / Requires Authentication**: Yes
+
+**需要权限 / Requires Permissions**: 需要网络抓包权限 / Network packet capture permissions required
 
 **请求体 / Request Body**:
 ```json
@@ -413,6 +456,15 @@ Authorization: Bearer <access_token>
     }
   ],
   "count": 100
+}
+```
+
+**响应 / Response** (403 Forbidden - 权限不足 / Insufficient permissions):
+```json
+{
+  "error": "Permission denied",
+  "message": "Insufficient permissions for packet capture. Please run the application with elevated privileges...",
+  "requires_elevated_privileges": true
 }
 ```
 
@@ -501,11 +553,16 @@ Authorization: Bearer <access_token>
 }
 ```
 
+**重要说明 / Important Note**: 本应用不使用任何模拟数据。所有返回的数据都是真实的网络监控数据。如果功能因权限不足而无法使用，将返回明确的错误信息和解决方案，而不是返回模拟数据。
+
+This application does NOT use mock or simulated data. All returned data is real network monitoring data. If a feature cannot be used due to insufficient permissions, a clear error message with solutions will be returned instead of mock data.
+
 常见HTTP状态码:
 - `200` OK - 成功 / Success
 - `201` Created - 创建成功 / Created successfully
 - `400` Bad Request - 请求参数错误 / Invalid request
 - `401` Unauthorized - 未授权/需要登录 / Unauthorized
+- `403` Forbidden - 权限不足 / Insufficient permissions (e.g., packet capture)
 - `404` Not Found - 资源不存在 / Resource not found
 - `422` Unprocessable Entity - 数据验证失败 / Validation failed
 - `500` Internal Server Error - 服务器内部错误 / Server error

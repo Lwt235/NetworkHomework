@@ -295,24 +295,39 @@ cp .env.example .env
 
 ## 数据包捕获权限
 
-### Linux
-```bash
-# 方法1: 授予Python捕获权限
-sudo setcap cap_net_raw,cap_net_admin=eip $(which python3)
+数据包捕获功能需要提升的系统权限才能访问网络接口。
 
-# 方法2: 以root用户运行
-sudo python app.py
+**重要**: 本应用不使用任何模拟数据。如果没有足够权限，抓包功能将返回明确的错误信息和权限设置说明。
+
+详细的权限设置指南请参阅 [PACKET_CAPTURE_PERMISSIONS.md](PACKET_CAPTURE_PERMISSIONS.md)
+
+### 快速设置
+
+#### Linux（推荐）
+```bash
+# 授予Python捕获权限（推荐方式）
+sudo setcap cap_net_raw,cap_net_admin=eip $(readlink -f $(which python3))
+
+# 验证权限
+getcap $(readlink -f $(which python3))
 ```
 
-### Windows
+#### Windows
 以管理员身份运行命令提示符或PowerShell
 
-### macOS
+#### macOS
 ```bash
-sudo python app.py
+sudo python3 app.py
 ```
 
-**注意**: 如果没有足够权限，系统将使用模拟数据。
+### 检查权限状态
+
+应用提供了权限检查端点：
+```bash
+GET /api/analysis/check-permissions
+```
+
+详细说明请参阅 [PACKET_CAPTURE_PERMISSIONS.md](PACKET_CAPTURE_PERMISSIONS.md)
 
 ## 故障排除
 
