@@ -61,23 +61,26 @@ def get_system_stats():
 def run_speed_test():
     """
     Run a simple network speed test
-    Note: This is a basic implementation. For production, consider using speedtest-cli
+    Note: This measures current network activity over a longer period for better accuracy
     """
+    # Measure over 5 seconds for more accurate results
     net_io_start = psutil.net_io_counters()
-    time.sleep(1)
+    time.sleep(5)
     net_io_end = psutil.net_io_counters()
     
     bytes_sent = net_io_end.bytes_sent - net_io_start.bytes_sent
     bytes_recv = net_io_end.bytes_recv - net_io_start.bytes_recv
     
-    # Convert to Mbps
-    download_speed = (bytes_recv * 8) / (1024 * 1024)  # Mbps
-    upload_speed = (bytes_sent * 8) / (1024 * 1024)  # Mbps
+    # Convert to Mbps (bits per second divided by 1,000,000)
+    # Formula: (bytes * 8) / (time_in_seconds * 1,000,000)
+    download_speed = (bytes_recv * 8) / (5 * 1000 * 1000)  # Mbps
+    upload_speed = (bytes_sent * 8) / (5 * 1000 * 1000)  # Mbps
     
     return {
         'download_speed': round(download_speed, 2),
         'upload_speed': round(upload_speed, 2),
-        'unit': 'Mbps'
+        'unit': 'Mbps',
+        'measurement_duration': 5
     }
 
 

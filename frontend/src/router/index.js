@@ -1,11 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
-import Dashboard from '../views/Dashboard.vue'
-import Devices from '../views/Devices.vue'
-import Monitoring from '../views/Monitoring.vue'
-import PacketCapture from '../views/PacketCapture.vue'
-import Analytics from '../views/Analytics.vue'
+import Layout from '../views/Layout.vue'
 
 const routes = [
   {
@@ -20,33 +16,35 @@ const routes = [
   },
   {
     path: '/',
-    name: 'Dashboard',
-    component: Dashboard,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/devices',
-    name: 'Devices',
-    component: Devices,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/monitoring',
-    name: 'Monitoring',
-    component: Monitoring,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/packet-capture',
-    name: 'PacketCapture',
-    component: PacketCapture,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/analytics',
-    name: 'Analytics',
-    component: Analytics,
-    meta: { requiresAuth: true }
+    component: Layout,
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        name: 'Dashboard',
+        component: Layout
+      },
+      {
+        path: 'devices',
+        name: 'Devices',
+        component: Layout
+      },
+      {
+        path: 'monitoring',
+        name: 'Monitoring',
+        component: Layout
+      },
+      {
+        path: 'packet-capture',
+        name: 'PacketCapture',
+        component: Layout
+      },
+      {
+        path: 'analytics',
+        name: 'Analytics',
+        component: Layout
+      }
+    ]
   }
 ]
 

@@ -41,6 +41,19 @@
       <el-col :span="24">
         <el-card>
           <template #header>
+            <span>流量趋势对比图</span>
+          </template>
+          <div style="height: 400px; padding: 10px;">
+            <TrafficChart :history-data="historyData" title="上传 vs 下载流量" />
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+    
+    <el-row :gutter="20" style="margin-top: 20px;">
+      <el-col :span="24">
+        <el-card>
+          <template #header>
             <span>警报管理</span>
           </template>
           
@@ -175,6 +188,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { monitoringAPI } from '@/services/api'
+import TrafficChart from '@/components/TrafficChart.vue'
 
 const timeRange = ref(24)
 const totalBytesSent = ref(0)
@@ -184,6 +198,7 @@ const totalPacketsRecv = ref(0)
 const alertTab = ref('active')
 const alerts = ref([])
 const systemStats = ref(null)
+const historyData = ref([])
 const thresholds = ref({
   cpu: 80,
   memory: 80,
@@ -195,6 +210,7 @@ let refreshInterval = null
 const loadData = async () => {
   try {
     const response = await monitoringAPI.getHistory({ hours: timeRange.value })
+    historyData.value = response.data.history
     const history = response.data.history
     
     totalBytesSent.value = history.reduce((sum, log) => sum + log.bytes_sent, 0)

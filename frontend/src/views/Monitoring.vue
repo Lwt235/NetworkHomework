@@ -31,6 +31,26 @@
     </el-row>
     
     <el-row :gutter="20" style="margin-top: 20px;">
+      <el-col :span="24">
+        <el-card>
+          <template #header>
+            <div class="card-header">
+              <span>流量趋势图</span>
+              <el-select v-model="chartHours" @change="loadHistory" style="width: 150px;">
+                <el-option label="最近1小时" :value="1" />
+                <el-option label="最近6小时" :value="6" />
+                <el-option label="最近24小时" :value="24" />
+              </el-select>
+            </div>
+          </template>
+          <div style="height: 350px; padding: 10px;">
+            <TrafficChart :history-data="historyData" :title="''" />
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+    
+    <el-row :gutter="20" style="margin-top: 20px;">
       <el-col :span="12">
         <el-card>
           <template #header>
@@ -48,6 +68,13 @@
                 </div>
                 <div class="speed-item">
                   <span>上传速度:</span>
+                  <strong>{{ speedTestResult.upload_speed }} Mbps</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
                   <strong>{{ speedTestResult.upload_speed }} Mbps</strong>
                 </div>
               </div>
@@ -139,6 +166,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { monitoringAPI } from '@/services/api'
+import TrafficChart from '@/components/TrafficChart.vue'
 
 const trafficData = ref({
   bytes_sent: 0,
@@ -151,6 +179,7 @@ const speedTestResult = ref(null)
 const testingSpeed = ref(false)
 const historyData = ref([])
 const historyHours = ref(24)
+const chartHours = ref(6)
 let refreshInterval = null
 
 const refreshData = async () => {
@@ -180,10 +209,12 @@ const runSpeedTest = async () => {
 
 const loadHistory = async () => {
   try {
-    const response = await monitoringAPI.getHistory({ hours: historyHours.value })
+    const response = await monitoringAPI.getHistory({ hours: chartHours.value })
     historyData.value = response.data.history
   } catch (error) {
     ElMessage.error('加载历史数据失败')
+  }
+}
   }
 }
 
