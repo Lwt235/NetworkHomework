@@ -14,9 +14,11 @@ def check_capture_permissions():
     Returns:
         dict with 'has_permission' (bool) and 'message' (str)
     """
+    from config import Config
     try:
         # Try to capture a single packet with a very short timeout
-        sniff(count=1, timeout=1, store=False)
+        iface = Config.CAPTURE_INTERFACE if hasattr(Config, 'CAPTURE_INTERFACE') else None
+        sniff(count=1, timeout=1, store=False, iface=iface)
         return {
             'has_permission': True,
             'message': 'Packet capture permissions are available'
@@ -197,6 +199,7 @@ def start_packet_capture(protocol='all', count=100, timeout=10, user_id=None):
         PermissionError: If the process doesn't have sufficient permissions
         RuntimeError: If packet capture fails for other reasons
     """
+    from config import Config
     captured_packets = []
     
     # Build filter string
@@ -210,6 +213,9 @@ def start_packet_capture(protocol='all', count=100, timeout=10, user_id=None):
     elif protocol.lower() == 'ip':
         filter_str = 'ip'
     
+    # Get configured interface
+    iface = Config.CAPTURE_INTERFACE if hasattr(Config, 'CAPTURE_INTERFACE') else None
+    
     try:
         # Capture packets
         # Note: This requires root/admin privileges
@@ -218,7 +224,8 @@ def start_packet_capture(protocol='all', count=100, timeout=10, user_id=None):
             prn=lambda pkt: packet_callback(pkt, user_id, captured_packets),
             count=count,
             timeout=timeout,
-            store=False
+            store=False,
+            iface=iface
         )
         
         # Commit all captured packets to database

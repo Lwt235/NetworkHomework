@@ -31,3 +31,7 @@ class Config:
     # Packet Capture
     CAPTURE_TIMEOUT = 60  # seconds
     MAX_PACKETS = 1000
+    # Network interface for packet capture (None = default interface)
+    # Example: 'Intel(R) Wi-Fi 6E AX211 160MHz' on Windows, 'eth0' on Linux
+    # Set to None or empty string to let scapy choose the default interface automatically
+    CAPTURE_INTERFACE = os.environ.get('CAPTURE_INTERFACE') or None
