@@ -2,6 +2,9 @@ from scapy.all import sniff, IP, TCP, UDP, ICMP
 from models import db, PacketCapture
 from datetime import datetime
 import os
+import platform
+import sys
+import logging
 
 
 def check_capture_permissions():
@@ -50,9 +53,6 @@ def get_permission_instructions():
     Returns:
         dict with OS-specific instructions
     """
-    import platform
-    import sys
-    
     system = platform.system()
     python_executable = os.path.realpath(sys.executable)  # Resolve symlinks
     
@@ -226,20 +226,17 @@ def start_packet_capture(protocol='all', count=100, timeout=10, user_id=None):
         
     except PermissionError as e:
         # Permission error - need elevated privileges
-        import logging
         logging.error(f"Packet capture permission denied: {e}")
         raise PermissionError(format_permission_instructions())
     except OSError as e:
         if 'Operation not permitted' in str(e) or e.errno == 1:
             # This is also a permission error
-            import logging
             logging.error(f"Packet capture permission denied (OSError): {e}")
             raise PermissionError(format_permission_instructions())
         else:
             raise RuntimeError(f"Packet capture failed: {str(e)}")
     except Exception as e:
         # Other errors
-        import logging
         logging.error(f"Packet capture error: {e}")
         raise RuntimeError(f"Packet capture failed: {str(e)}")
     
