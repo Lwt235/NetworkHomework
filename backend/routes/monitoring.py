@@ -52,7 +52,7 @@ def speed_test():
 @jwt_required()
 def get_history():
     """Get historical traffic data"""
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     
     # Get time range from query params
     hours = request.args.get('hours', 24, type=int)
@@ -78,7 +78,7 @@ def get_history():
 @jwt_required()
 def get_alerts():
     """Get alerts for current user"""
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     
     status = request.args.get('status', 'active')
     alerts = Alert.query.filter_by(user_id=user_id, status=status).order_by(Alert.created_at.desc()).limit(100).all()
@@ -93,7 +93,7 @@ def get_alerts():
 @jwt_required()
 def resolve_alert(alert_id):
     """Resolve an alert"""
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     alert = Alert.query.filter_by(id=alert_id, user_id=user_id).first()
     
     if not alert:

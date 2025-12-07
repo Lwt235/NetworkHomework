@@ -9,7 +9,7 @@ devices_bp = Blueprint('devices', __name__)
 @jwt_required()
 def get_devices():
     """Get all devices for current user"""
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     devices = Device.query.filter_by(user_id=user_id).all()
     
     return jsonify({
@@ -21,7 +21,7 @@ def get_devices():
 @jwt_required()
 def get_device(device_id):
     """Get specific device"""
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     device = Device.query.filter_by(id=device_id, user_id=user_id).first()
     
     if not device:
@@ -34,7 +34,7 @@ def get_device(device_id):
 @jwt_required()
 def add_device():
     """Add a new device"""
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     data = request.get_json()
     
     if not data or not data.get('name') or not data.get('ip_address'):
@@ -60,7 +60,7 @@ def add_device():
 @jwt_required()
 def update_device(device_id):
     """Update device information"""
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     device = Device.query.filter_by(id=device_id, user_id=user_id).first()
     
     if not device:
@@ -90,7 +90,7 @@ def update_device(device_id):
 @jwt_required()
 def delete_device(device_id):
     """Delete a device"""
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     device = Device.query.filter_by(id=device_id, user_id=user_id).first()
     
     if not device:

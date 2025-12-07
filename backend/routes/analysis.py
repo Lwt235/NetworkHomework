@@ -10,7 +10,7 @@ analysis_bp = Blueprint('analysis', __name__)
 @jwt_required()
 def capture_packets():
     """Start packet capture"""
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     data = request.get_json()
     
     # Get capture parameters
@@ -34,7 +34,7 @@ def capture_packets():
 @jwt_required()
 def get_packets():
     """Get captured packets"""
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     
     # Get time range
     hours = request.args.get('hours', 1, type=int)
@@ -63,7 +63,7 @@ def get_packets():
 @jwt_required()
 def get_stats():
     """Get network statistics and analysis"""
-    user_id = get_jwt_identity()
+    user_id = int(get_jwt_identity())
     
     # Get time range
     hours = request.args.get('hours', 24, type=int)
