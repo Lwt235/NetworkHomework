@@ -56,6 +56,11 @@ NetworkHomework/
 │   ├── app.py              # Main Flask application
 │   ├── config.py           # Configuration settings
 │   ├── models.py           # Database models
+│   ├── init_db.py          # Database initialization script
+│   ├── create_db_postgresql.sql # PostgreSQL database creation script
+│   ├── create_db_mysql.sql # MySQL database creation script
+│   ├── DATABASE_SETUP.md   # Database setup guide
+│   ├── DB_QUICK_REFERENCE.md # Database quick reference
 │   ├── routes/
 │   │   ├── auth.py         # Authentication routes
 │   │   ├── devices.py      # Device management routes

@@ -79,6 +79,11 @@ NetworkHomework/
 │   ├── config.py              # 配置文件
 │   ├── models.py              # 数据库模型
 │   ├── requirements.txt       # Python依赖
+│   ├── init_db.py             # 数据库初始化脚本
+│   ├── create_db_postgresql.sql # PostgreSQL数据库创建脚本
+│   ├── create_db_mysql.sql    # MySQL数据库创建脚本
+│   ├── DATABASE_SETUP.md      # 数据库设置指南
+│   ├── DB_QUICK_REFERENCE.md  # 数据库快速参考
 │   ├── routes/                # API路由
 │   │   ├── auth.py           # 认证相关路由
 │   │   ├── devices.py        # 设备管理路由
