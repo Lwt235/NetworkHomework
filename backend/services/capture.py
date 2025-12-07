@@ -54,7 +54,7 @@ def get_permission_instructions():
     import sys
     
     system = platform.system()
-    python_executable = sys.executable
+    python_executable = os.path.realpath(sys.executable)  # Resolve symlinks
     
     if system == 'Linux':
         return {
@@ -105,6 +105,25 @@ def get_permission_instructions():
                 }
             ]
         }
+
+
+def format_permission_instructions():
+    """
+    Format permission instructions as a user-friendly string
+    
+    Returns:
+        str: Formatted instructions for granting permissions
+    """
+    instructions = get_permission_instructions()
+    lines = [f"Insufficient permissions for packet capture on {instructions['os']}."]
+    lines.append("Please use one of the following methods:")
+    
+    for i, method in enumerate(instructions['methods'], 1):
+        lines.append(f"\n{i}. {method['method']}")
+        lines.append(f"   Command: {method['command']}")
+        lines.append(f"   {method['description']}")
+    
+    return '\n'.join(lines)
 
 
 def packet_callback(packet, user_id, captured_packets):
@@ -209,25 +228,13 @@ def start_packet_capture(protocol='all', count=100, timeout=10, user_id=None):
         # Permission error - need elevated privileges
         import logging
         logging.error(f"Packet capture permission denied: {e}")
-        raise PermissionError(
-            "Insufficient permissions for packet capture. "
-            "Please run the application with elevated privileges:\n"
-            "- Linux: sudo python app.py OR sudo setcap cap_net_raw,cap_net_admin=eip $(which python3)\n"
-            "- Windows: Run as Administrator\n"
-            "- macOS: sudo python app.py"
-        )
+        raise PermissionError(format_permission_instructions())
     except OSError as e:
         if 'Operation not permitted' in str(e) or e.errno == 1:
             # This is also a permission error
             import logging
             logging.error(f"Packet capture permission denied (OSError): {e}")
-            raise PermissionError(
-                "Insufficient permissions for packet capture. "
-                "Please run the application with elevated privileges:\n"
-                "- Linux: sudo python app.py OR sudo setcap cap_net_raw,cap_net_admin=eip $(which python3)\n"
-                "- Windows: Run as Administrator\n"
-                "- macOS: sudo python app.py"
-            )
+            raise PermissionError(format_permission_instructions())
         else:
             raise RuntimeError(f"Packet capture failed: {str(e)}")
     except Exception as e:
