@@ -1,133 +1,24 @@
 # Database Setup Guide / 数据库设置指南
 
-This guide provides instructions for setting up the database for the Network Monitoring Tool.
+This guide provides instructions for setting up the MySQL database for the Network Monitoring Tool.
 
-本指南提供了为网络监控工具设置数据库的说明。
+本指南提供了为网络监控工具设置 MySQL 数据库的说明。
 
 ## Table of Contents / 目录
 
-1. [SQLite Setup (Default)](#sqlite-setup-default--sqlite-设置默认)
-2. [PostgreSQL Setup](#postgresql-setup--postgresql-设置)
-3. [MySQL Setup](#mysql-setup--mysql-设置)
-4. [Database Management Commands](#database-management-commands--数据库管理命令)
-
----
-
-## SQLite Setup (Default) / SQLite 设置（默认）
-
-SQLite is the default database and requires no additional setup. The database file will be created automatically when you first run the application.
-
-SQLite 是默认数据库，不需要额外设置。首次运行应用程序时会自动创建数据库文件。
-
-### Quick Start / 快速开始
-
-```bash
-cd backend
-
-# Initialize database tables
-# 初始化数据库表
-python init_db.py init
-
-# Or simply run the application (it will create tables automatically)
-# 或者直接运行应用程序（它会自动创建表）
-python app.py
-```
-
-The SQLite database file `network_monitor.db` will be created in the `backend/` directory.
-
-SQLite 数据库文件 `network_monitor.db` 将在 `backend/` 目录中创建。
-
----
-
-## PostgreSQL Setup / PostgreSQL 设置
-
-PostgreSQL is recommended for production environments due to its robustness and performance.
-
-PostgreSQL 因其稳健性和性能而推荐用于生产环境。
-
-### Prerequisites / 前置要求
-
-- PostgreSQL 12 or higher installed
-- PostgreSQL 12 或更高版本已安装
-
-### Step 1: Create Database / 步骤 1：创建数据库
-
-#### Method 1: Using SQL Script / 方法 1：使用 SQL 脚本
-
-```bash
-# Run as postgres user
-# 以 postgres 用户身份运行
-sudo -u postgres psql -f create_db_postgresql.sql
-```
-
-#### Method 2: Using psql Command Line / 方法 2：使用 psql 命令行
-
-```bash
-# Connect to PostgreSQL as superuser
-# 以超级用户身份连接到 PostgreSQL
-sudo -u postgres psql
-
-# Create database
-# 创建数据库
-CREATE DATABASE network_monitor
-    WITH 
-    OWNER = postgres
-    ENCODING = 'UTF8'
-    LC_COLLATE = 'en_US.UTF-8'
-    LC_CTYPE = 'en_US.UTF-8';
-
-# Create user (optional but recommended)
-# 创建用户（可选但推荐）
-CREATE USER network_monitor_user WITH PASSWORD 'your_secure_password_here';
-
-# Grant privileges
-# 授予权限
-GRANT ALL PRIVILEGES ON DATABASE network_monitor TO network_monitor_user;
-
-# Exit psql
-# 退出 psql
-\q
-```
-
-### Step 2: Configure Environment / 步骤 2：配置环境
-
-Create or edit `.env` file in the `backend/` directory:
-
-在 `backend/` 目录中创建或编辑 `.env` 文件：
-
-```bash
-DATABASE_URL=postgresql://network_monitor_user:your_secure_password_here@localhost:5432/network_monitor
-```
-
-### Step 3: Initialize Tables / 步骤 3：初始化表
-
-```bash
-cd backend
-
-# Initialize database tables
-# 初始化数据库表
-python init_db.py init
-```
-
-### Step 4: Verify Installation / 步骤 4：验证安装
-
-```bash
-# Check database info
-# 检查数据库信息
-python init_db.py info
-
-# Connect to database to verify tables
-# 连接到数据库以验证表
-psql -U network_monitor_user -d network_monitor -c "\dt"
-```
+1. [MySQL Setup](#mysql-setup--mysql-设置)
+2. [Database Management Commands](#database-management-commands--数据库管理命令)
+3. [Troubleshooting](#troubleshooting--故障排除)
+4. [Security Recommendations](#security-recommendations--安全建议)
+5. [Backup and Restore](#backup-and-restore--备份和恢复)
 
 ---
 
 ## MySQL Setup / MySQL 设置
 
-MySQL is also supported for production environments.
+MySQL is the database for this project.
 
-MySQL 也支持用于生产环境。
+MySQL 是本项目的数据库。
 
 ### Prerequisites / 前置要求
 
@@ -175,7 +66,17 @@ FLUSH PRIVILEGES;
 EXIT;
 ```
 
-### Step 2: Configure Environment / 步骤 2：配置环境
+### Step 2: Install MySQL Driver / 步骤 2：安装 MySQL 驱动程序
+
+**Note**: The MySQL Python driver is required for the application to connect to MySQL.
+
+**注意**：应用程序需要 MySQL Python 驱动程序才能连接到 MySQL。
+
+```bash
+pip install PyMySQL
+```
+
+### Step 3: Configure Environment / 步骤 3：配置环境
 
 Create or edit `.env` file in the `backend/` directory:
 
@@ -185,25 +86,7 @@ Create or edit `.env` file in the `backend/` directory:
 DATABASE_URL=mysql://network_monitor_user:your_secure_password_here@localhost:3306/network_monitor
 ```
 
-**Note**: You may need to install the MySQL Python driver:
-
-**注意**：您可能需要安装 MySQL Python 驱动程序：
-
-```bash
-pip install mysqlclient
-# or
-pip install PyMySQL
-```
-
-If using PyMySQL, update the DATABASE_URL:
-
-如果使用 PyMySQL，请更新 DATABASE_URL：
-
-```bash
-DATABASE_URL=mysql+pymysql://network_monitor_user:your_secure_password_here@localhost:3306/network_monitor
-```
-
-### Step 3: Initialize Tables / 步骤 3：初始化表
+### Step 4: Initialize Tables / 步骤 4：初始化表
 
 ```bash
 cd backend
@@ -213,7 +96,7 @@ cd backend
 python init_db.py init
 ```
 
-### Step 4: Verify Installation / 步骤 4：验证安装
+### Step 5: Verify Installation / 步骤 5：验证安装
 
 ```bash
 # Check database info
@@ -301,47 +184,6 @@ The application creates the following tables:
 
 ## Troubleshooting / 故障排除
 
-### SQLite Issues / SQLite 问题
-
-**Problem**: Permission denied error
-
-**问题**：权限被拒绝错误
-
-**Solution**: Ensure the backend directory is writable:
-
-**解决方案**：确保后端目录可写：
-
-```bash
-chmod 755 backend/
-```
-
-### PostgreSQL Issues / PostgreSQL 问题
-
-**Problem**: Connection refused
-
-**问题**：连接被拒绝
-
-**Solution**: Ensure PostgreSQL is running:
-
-**解决方案**：确保 PostgreSQL 正在运行：
-
-```bash
-sudo systemctl status postgresql
-sudo systemctl start postgresql
-```
-
-**Problem**: Authentication failed
-
-**问题**：认证失败
-
-**Solution**: Check your `.env` file has correct credentials and the user exists:
-
-**解决方案**：检查 `.env` 文件具有正确的凭据并且用户存在：
-
-```bash
-sudo -u postgres psql -c "\du"
-```
-
 ### MySQL Issues / MySQL 问题
 
 **Problem**: Access denied for user
@@ -366,9 +208,40 @@ mysql -u root -p -e "SHOW GRANTS FOR 'network_monitor_user'@'localhost';"
 **解决方案**：安装所需的驱动程序：
 
 ```bash
-pip install mysqlclient
-# or
 pip install PyMySQL
+```
+
+**Problem**: Connection refused
+
+**问题**：连接被拒绝
+
+**Solution**: Ensure MySQL is running:
+
+**解决方案**：确保 MySQL 正在运行：
+
+```bash
+# On Linux
+sudo systemctl status mysql
+sudo systemctl start mysql
+
+# On macOS
+brew services list
+brew services start mysql
+
+# On Windows
+# Check MySQL service in Services Manager
+```
+
+**Problem**: Character encoding issues
+
+**问题**：字符编码问题
+
+**Solution**: Ensure database uses utf8mb4:
+
+**解决方案**：确保数据库使用 utf8mb4：
+
+```bash
+mysql -u root -p -e "ALTER DATABASE network_monitor CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 ```
 
 ---
@@ -395,44 +268,48 @@ pip install PyMySQL
    
    **保持更新**：定期使用安全补丁更新数据库软件
 
+6. **Remove Test Users**: Delete any test or anonymous MySQL users
+   
+   **删除测试用户**：删除任何测试或匿名 MySQL 用户
+
 ---
 
 ## Backup and Restore / 备份和恢复
 
-### SQLite Backup / SQLite 备份
-
-```bash
-# Backup
-# 备份
-cp backend/network_monitor.db backend/network_monitor.db.backup
-
-# Restore
-# 恢复
-cp backend/network_monitor.db.backup backend/network_monitor.db
-```
-
-### PostgreSQL Backup / PostgreSQL 备份
-
-```bash
-# Backup
-# 备份
-pg_dump -U network_monitor_user network_monitor > network_monitor_backup.sql
-
-# Restore
-# 恢复
-psql -U network_monitor_user network_monitor < network_monitor_backup.sql
-```
-
 ### MySQL Backup / MySQL 备份
 
 ```bash
-# Backup
-# 备份
+# Backup database
+# 备份数据库
 mysqldump -u network_monitor_user -p network_monitor > network_monitor_backup.sql
 
-# Restore
-# 恢复
+# Backup with timestamp
+# 带时间戳的备份
+mysqldump -u network_monitor_user -p network_monitor > network_monitor_backup_$(date +%Y%m%d_%H%M%S).sql
+```
+
+### MySQL Restore / MySQL 恢复
+
+```bash
+# Restore database
+# 恢复数据库
 mysql -u network_monitor_user -p network_monitor < network_monitor_backup.sql
+```
+
+### Automated Backup Script / 自动备份脚本
+
+Create a cron job for regular backups:
+
+为定期备份创建 cron 作业：
+
+```bash
+# Edit crontab
+# 编辑 crontab
+crontab -e
+
+# Add this line to backup daily at 2 AM
+# 添加此行以在凌晨 2 点每天备份
+0 2 * * * /usr/bin/mysqldump -u network_monitor_user -p'your_password' network_monitor > /path/to/backups/network_monitor_$(date +\%Y\%m\%d).sql
 ```
 
 ---
@@ -440,9 +317,8 @@ mysql -u network_monitor_user -p network_monitor < network_monitor_backup.sql
 ## Additional Resources / 其他资源
 
 - [Flask-SQLAlchemy Documentation](https://flask-sqlalchemy.palletsprojects.com/)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [MySQL Documentation](https://dev.mysql.com/doc/)
-- [SQLite Documentation](https://www.sqlite.org/docs.html)
+- [PyMySQL Documentation](https://pymysql.readthedocs.io/)
 
 ---
 

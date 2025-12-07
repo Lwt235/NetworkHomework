@@ -24,7 +24,7 @@ cp .env.example .env
 ```bash
 SECRET_KEY=your-secret-key-here
 JWT_SECRET_KEY=your-jwt-secret-key-here
-DATABASE_URL=sqlite:///network_monitor.db
+DATABASE_URL=mysql://network_monitor_user:password@localhost:3306/network_monitor
 ```
 
 #### 3. 初始化数据库 / Initialize Database
@@ -197,34 +197,16 @@ sudo python app.py
 
 ### 数据库 / Database
 
-默认使用 SQLite。对于生产环境，建议使用 PostgreSQL 或 MySQL。
-SQLite is used by default. For production environments, PostgreSQL or MySQL is recommended.
+本项目使用 MySQL 作为数据库。
+This project uses MySQL as its database.
 
-#### SQLite (默认 / Default)
-```bash
-# 数据库文件将自动创建 / Database file will be created automatically
-DATABASE_URL=sqlite:///network_monitor.db
-```
-
-#### PostgreSQL (推荐用于生产 / Recommended for Production)
-```bash
-# 1. 创建数据库 / Create database
-sudo -u postgres psql -f create_db_postgresql.sql
-
-# 2. 配置连接 / Configure connection
-DATABASE_URL=postgresql://network_monitor_user:password@localhost:5432/network_monitor
-
-# 3. 初始化表 / Initialize tables
-python init_db.py init
-```
-
-#### MySQL
+#### MySQL 设置 / MySQL Setup
 ```bash
 # 1. 创建数据库 / Create database
 mysql -u root -p < create_db_mysql.sql
 
 # 2. 安装 MySQL 驱动 / Install MySQL driver
-pip install mysqlclient  # or PyMySQL
+pip install PyMySQL
 
 # 3. 配置连接 / Configure connection
 DATABASE_URL=mysql://network_monitor_user:password@localhost:3306/network_monitor
@@ -242,14 +224,10 @@ python init_db.py info
 python init_db.py reset
 
 # 备份数据库 / Backup database
-# SQLite
-cp network_monitor.db network_monitor.db.backup
-
-# PostgreSQL
-pg_dump -U network_monitor_user network_monitor > backup.sql
-
-# MySQL
 mysqldump -u network_monitor_user -p network_monitor > backup.sql
+
+# 恢复数据库 / Restore database
+mysql -u network_monitor_user -p network_monitor < backup.sql
 ```
 
 详细说明请参阅 [backend/DATABASE_SETUP.md](backend/DATABASE_SETUP.md)

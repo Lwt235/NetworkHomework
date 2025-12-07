@@ -60,7 +60,7 @@
 - **Flask-Bcrypt** - 密码加密
 - **Scapy** - 网络数据包捕获和分析
 - **psutil** - 系统和网络信息收集
-- **SQLite** - 默认数据库（可配置PostgreSQL/MySQL）
+- **MySQL** - 数据库
 
 ### 前端技术
 - **Vue 3** - 渐进式JavaScript框架
@@ -80,7 +80,6 @@ NetworkHomework/
 │   ├── models.py              # 数据库模型
 │   ├── requirements.txt       # Python依赖
 │   ├── init_db.py             # 数据库初始化脚本
-│   ├── create_db_postgresql.sql # PostgreSQL数据库创建脚本
 │   ├── create_db_mysql.sql    # MySQL数据库创建脚本
 │   ├── DATABASE_SETUP.md      # 数据库设置指南
 │   ├── DB_QUICK_REFERENCE.md  # 数据库快速参考
@@ -174,29 +173,9 @@ npm run dev
 
 ## 数据库设置
 
-本项目支持多种数据库系统：SQLite（默认）、PostgreSQL、MySQL。
+本项目使用 MySQL 作为数据库。
 
-### SQLite（默认，无需额外配置）
-
-```bash
-cd backend
-python init_db.py init
-```
-
-### PostgreSQL（推荐用于生产环境）
-
-```bash
-# 1. 创建数据库
-sudo -u postgres psql -f create_db_postgresql.sql
-
-# 2. 配置环境变量（在 .env 文件中）
-DATABASE_URL=postgresql://network_monitor_user:password@localhost:5432/network_monitor
-
-# 3. 初始化表
-python init_db.py init
-```
-
-### MySQL
+### MySQL 设置
 
 ```bash
 # 1. 创建数据库
@@ -205,7 +184,11 @@ mysql -u root -p < create_db_mysql.sql
 # 2. 配置环境变量（在 .env 文件中）
 DATABASE_URL=mysql://network_monitor_user:password@localhost:3306/network_monitor
 
-# 3. 初始化表
+# 3. 安装 MySQL 驱动
+pip install PyMySQL
+
+# 4. 初始化表
+cd backend
 python init_db.py init
 ```
 
@@ -297,7 +280,7 @@ cp .env.example .env
 ### 生产环境建议
 - 使用 Gunicorn 或 uWSGI 运行后端
 - 使用 Nginx 托管前端静态文件
-- 使用 PostgreSQL 或 MySQL 替代SQLite
+- 使用 MySQL 数据库
 - 启用HTTPS
 - 配置防火墙规则
 - 定期备份数据库

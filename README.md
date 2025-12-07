@@ -57,7 +57,6 @@ NetworkHomework/
 │   ├── config.py           # Configuration settings
 │   ├── models.py           # Database models
 │   ├── init_db.py          # Database initialization script
-│   ├── create_db_postgresql.sql # PostgreSQL database creation script
 │   ├── create_db_mysql.sql # MySQL database creation script
 │   ├── DATABASE_SETUP.md   # Database setup guide
 │   ├── DB_QUICK_REFERENCE.md # Database quick reference
@@ -115,29 +114,9 @@ npm run dev
 
 ## Database Setup
 
-This project supports multiple database systems: SQLite (default), PostgreSQL, and MySQL.
+This project uses MySQL as its database.
 
-### SQLite (Default, No Additional Configuration Required)
-
-```bash
-cd backend
-python init_db.py init
-```
-
-### PostgreSQL (Recommended for Production)
-
-```bash
-# 1. Create database
-sudo -u postgres psql -f create_db_postgresql.sql
-
-# 2. Configure environment variables (in .env file)
-DATABASE_URL=postgresql://network_monitor_user:password@localhost:5432/network_monitor
-
-# 3. Initialize tables
-python init_db.py init
-```
-
-### MySQL
+### MySQL Setup
 
 ```bash
 # 1. Create database
@@ -146,7 +125,10 @@ mysql -u root -p < create_db_mysql.sql
 # 2. Configure environment variables (in .env file)
 DATABASE_URL=mysql://network_monitor_user:password@localhost:3306/network_monitor
 
-# 3. Initialize tables
+# 3. Install MySQL driver
+pip install PyMySQL
+
+# 4. Initialize tables
 python init_db.py init
 ```
 
