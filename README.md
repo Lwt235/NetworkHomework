@@ -190,13 +190,50 @@ Backend configuration can be modified in `backend/config.py`:
 - JWT tokens are used for authentication
 - CORS is configured for secure cross-origin requests
 - Input validation on all endpoints
+- **No mock data**: All network data is real - packet capture requires proper permissions
+
+## Packet Capture Permissions
+
+Packet capture functionality requires elevated system privileges to access network interfaces.
+
+**Important**: This application does NOT use mock or simulated data. If permissions are insufficient, packet capture will return clear error messages with setup instructions.
+
+For detailed permission setup instructions, see [PACKET_CAPTURE_PERMISSIONS.md](PACKET_CAPTURE_PERMISSIONS.md)
+
+### Quick Setup
+
+#### Linux (Recommended)
+```bash
+# Grant capabilities to Python binary (recommended)
+sudo setcap cap_net_raw,cap_net_admin=eip $(readlink -f $(which python3))
+
+# Verify permissions
+getcap $(readlink -f $(which python3))
+```
+
+#### Windows
+Run Command Prompt or PowerShell as Administrator
+
+#### macOS
+```bash
+sudo python3 app.py
+```
+
+### Permission Check
+
+The application provides a permission check endpoint:
+```bash
+GET /api/analysis/check-permissions
+```
+
+See [PACKET_CAPTURE_PERMISSIONS.md](PACKET_CAPTURE_PERMISSIONS.md) for complete details.
 
 ## Requirements
 
 ### System Requirements
 - Python 3.8 or higher
 - Node.js 14 or higher
-- Administrator/root privileges for packet capture
+- Administrator/root privileges for packet capture (see Packet Capture Permissions above)
 
 ### Python Packages
 See `backend/requirements.txt`
