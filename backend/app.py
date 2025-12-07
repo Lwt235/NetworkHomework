@@ -9,57 +9,58 @@ def create_app(config_class=Config):
     """Application factory"""
     app = Flask(__name__)
     app.config.from_object(config_class)
-    
+
     # Initialize extensions
     db.init_app(app)
     bcrypt.init_app(app)
     jwt = JWTManager(app)
     CORS(app, origins=app.config['CORS_ORIGINS'])
-    
+
     # Register blueprints
     from routes.auth import auth_bp
     from routes.devices import devices_bp
     from routes.monitoring import monitoring_bp
     from routes.analysis import analysis_bp
-    
+
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(devices_bp, url_prefix='/api/devices')
     app.register_blueprint(monitoring_bp, url_prefix='/api/monitoring')
     app.register_blueprint(analysis_bp, url_prefix='/api/analysis')
-    
+
     # Error handlers
     @app.errorhandler(404)
     def not_found(error):
         return jsonify({'error': 'Not found'}), 404
-    
+
     @app.errorhandler(500)
     def internal_error(error):
         return jsonify({'error': 'Internal server error'}), 500
-    
+
     # Health check endpoint
     @app.route('/api/health')
     def health():
         return jsonify({'status': 'healthy'}), 200
-    
+
     # Create database tables
     with app.app_context():
         db.create_all()
-        
+
         # Initialize background monitoring
         from services.background_tasks import init_background_monitor
         init_background_monitor(app, config_class)
-    
+
     return app
 
 
+app = create_app()
+
 if __name__ == '__main__':
     import os
-    app = create_app()
-    
+
     # Register cleanup handler
     from services.background_tasks import stop_background_monitor
     atexit.register(stop_background_monitor)
-    
+
     print("Starting Flask server on http://localhost:5000")
     # Debug mode should only be enabled in development
     # In production, use a proper WSGI server like Gunicorn
