@@ -289,17 +289,52 @@ Authorization: Bearer <access_token>
 
 **需要认证 / Requires Authentication**: Yes
 
+**注意 / Note**: 速度测试可能需要 60-90 秒完成，前端应使用至少 120 秒的超时时间。
+
 **响应 / Response** (200 OK):
 ```json
 {
   "results": {
     "download_speed": 100.5,
     "upload_speed": 50.2,
-    "unit": "Mbps"
+    "ping": 25.3,
+    "unit": "Mbps",
+    "server": "speedtest.example.com",
+    "server_location": "Beijing, CN"
   },
   "timestamp": "2024-01-01T00:00:00"
 }
 ```
+
+### 获取网络负载 / Get Network Load
+
+**GET** `/monitoring/network-load`
+
+获取当前网络负载指标，包括实时速率和利用率百分比。
+
+**需要认证 / Requires Authentication**: Yes
+
+**响应 / Response** (200 OK):
+```json
+{
+  "load": {
+    "bytes_sent_per_sec": 1024000.50,
+    "bytes_recv_per_sec": 2048000.75,
+    "packets_sent_per_sec": 150.25,
+    "packets_recv_per_sec": 300.50,
+    "upload_utilization_percent": 8.19,
+    "download_utilization_percent": 16.38,
+    "total_utilization_percent": 12.29,
+    "timestamp": 1609459200.0
+  },
+  "timestamp": "2024-01-01T00:00:00"
+}
+```
+
+**说明 / Notes**:
+- `bytes_*_per_sec`: 每秒字节数 / Bytes per second
+- `packets_*_per_sec`: 每秒数据包数 / Packets per second  
+- `*_utilization_percent`: 基于 100 Mbps 基准的利用率百分比 / Utilization percentage based on 100 Mbps baseline
 
 ### 获取历史数据 / Get History Data
 
@@ -435,9 +470,16 @@ Authorization: Bearer <access_token>
 {
   "protocol": "tcp",
   "count": 100,
-  "timeout": 10
+  "timeout": 10,
+  "clear_previous": true
 }
 ```
+
+**参数说明 / Parameters**:
+- `protocol`: 协议类型 (tcp/udp/icmp/ip/all) / Protocol type
+- `count`: 要捕获的数据包数量 / Number of packets to capture
+- `timeout`: 超时时间（秒）/ Timeout in seconds
+- `clear_previous`: 是否清除之前捕获的数据包（可选，默认false）/ Whether to clear previous captures (optional, default false)
 
 **响应 / Response** (200 OK):
 ```json
@@ -518,7 +560,51 @@ Authorization: Bearer <access_token>
     "total_packets": 1500,
     "total_bytes": 2250000
   },
+  "analysis": {
+    "top_source_ips": [
+      {
+        "ip": "192.168.1.100",
+        "packet_count": 500,
+        "total_bytes": 750000
+      }
+    ],
+    "top_destination_ips": [
+      {
+        "ip": "8.8.8.8",
+        "packet_count": 300,
+        "total_bytes": 450000
+      }
+    ],
+    "top_destination_ports": [
+      {
+        "port": 443,
+        "service": "HTTPS",
+        "packet_count": 400
+      },
+      {
+        "port": 80,
+        "service": "HTTP",
+        "packet_count": 200
+      }
+    ]
+  },
   "timestamp": "2024-01-01T00:00:00"
+}
+```
+
+### 清除捕获的数据包 / Clear Captured Packets
+
+**DELETE** `/analysis/clear-packets`
+
+清除当前用户所有捕获的数据包。
+
+**需要认证 / Requires Authentication**: Yes
+
+**响应 / Response** (200 OK):
+```json
+{
+  "message": "Packets cleared successfully",
+  "deleted_count": 1500
 }
 ```
 
