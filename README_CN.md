@@ -182,7 +182,7 @@ npm run dev
 mysql -u root -p < create_db_mysql.sql
 
 # 2. 配置环境变量（在 .env 文件中）
-DATABASE_URL=mysql://network_monitor_user:password@localhost:3306/network_monitor
+DATABASE_URL=mysql+pymysql://network_monitor_user:password@localhost:3306/network_monitor
 
 # 3. 安装 MySQL 驱动
 pip install PyMySQL

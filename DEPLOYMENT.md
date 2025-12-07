@@ -24,7 +24,7 @@ cp .env.example .env
 ```bash
 SECRET_KEY=your-secret-key-here
 JWT_SECRET_KEY=your-jwt-secret-key-here
-DATABASE_URL=mysql://network_monitor_user:password@localhost:3306/network_monitor
+DATABASE_URL=mysql+pymysql://network_monitor_user:password@localhost:3306/network_monitor
 ```
 
 #### 3. 初始化数据库 / Initialize Database
@@ -209,7 +209,7 @@ mysql -u root -p < create_db_mysql.sql
 pip install PyMySQL
 
 # 3. 配置连接 / Configure connection
-DATABASE_URL=mysql://network_monitor_user:password@localhost:3306/network_monitor
+DATABASE_URL=mysql+pymysql://network_monitor_user:password@localhost:3306/network_monitor
 
 # 4. 初始化表 / Initialize tables
 python init_db.py init

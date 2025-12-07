@@ -123,7 +123,7 @@ This project uses MySQL as its database.
 mysql -u root -p < create_db_mysql.sql
 
 # 2. Configure environment variables (in .env file)
-DATABASE_URL=mysql://network_monitor_user:password@localhost:3306/network_monitor
+DATABASE_URL=mysql+pymysql://network_monitor_user:password@localhost:3306/network_monitor
 
 # 3. Install MySQL driver
 pip install PyMySQL

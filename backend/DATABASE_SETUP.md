@@ -83,7 +83,7 @@ Create or edit `.env` file in the `backend/` directory:
 在 `backend/` 目录中创建或编辑 `.env` 文件：
 
 ```bash
-DATABASE_URL=mysql://network_monitor_user:your_secure_password_here@localhost:3306/network_monitor
+DATABASE_URL=mysql+pymysql://network_monitor_user:your_secure_password_here@localhost:3306/network_monitor
 ```
 
 ### Step 4: Initialize Tables / 步骤 4：初始化表

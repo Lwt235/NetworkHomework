@@ -8,7 +8,7 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
     # Database - MySQL only
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql://network_monitor_user:your_secure_password_here@localhost:3306/network_monitor'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql+pymysql://network_monitor_user:your_secure_password_here@localhost:3306/network_monitor'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # JWT

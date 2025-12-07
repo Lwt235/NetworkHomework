@@ -17,7 +17,7 @@ mysql -u root -p < create_db_mysql.sql
 pip install PyMySQL
 
 # 3. 在 .env 文件中设置 / Set in .env file:
-DATABASE_URL=mysql://network_monitor_user:your_password@localhost:3306/network_monitor
+DATABASE_URL=mysql+pymysql://network_monitor_user:your_password@localhost:3306/network_monitor
 
 # 4. 初始化表 / Initialize tables
 python init_db.py init
