@@ -10,7 +10,7 @@ import logging
 def check_capture_permissions():
     """
     Check if the application has permissions to capture packets
-    
+
     Returns:
         dict with 'has_permission' (bool) and 'message' (str)
     """
@@ -51,13 +51,13 @@ def check_capture_permissions():
 def get_permission_instructions():
     """
     Get OS-specific instructions for granting packet capture permissions
-    
+
     Returns:
         dict with OS-specific instructions
     """
     system = platform.system()
     python_executable = os.path.realpath(sys.executable)  # Resolve symlinks
-    
+
     if system == 'Linux':
         return {
             'os': 'Linux',
@@ -112,19 +112,19 @@ def get_permission_instructions():
 def format_permission_instructions():
     """
     Format permission instructions as a user-friendly string
-    
+
     Returns:
         str: Formatted instructions for granting permissions
     """
     instructions = get_permission_instructions()
     lines = [f"Insufficient permissions for packet capture on {instructions['os']}."]
     lines.append("Please use one of the following methods:")
-    
+
     for i, method in enumerate(instructions['methods'], 1):
         lines.append(f"\n{i}. {method['method']}")
         lines.append(f"   Command: {method['command']}")
         lines.append(f"   {method['description']}")
-    
+
     return '\n'.join(lines)
 
 
@@ -136,7 +136,7 @@ def packet_callback(packet, user_id, captured_packets):
             src_port = None
             dst_port = None
             info = ""
-            
+
             if TCP in packet:
                 protocol = 'TCP'
                 src_port = packet[TCP].sport
@@ -151,7 +151,7 @@ def packet_callback(packet, user_id, captured_packets):
                 info = f"Type: {packet[ICMP].type}"
             else:
                 protocol = 'IP'
-            
+
             packet_data = {
                 'timestamp': datetime.utcnow().isoformat(),
                 'protocol': protocol,
@@ -162,7 +162,7 @@ def packet_callback(packet, user_id, captured_packets):
                 'length': len(packet),
                 'info': info
             }
-            
+
             # Save to database
             capture = PacketCapture(
                 protocol=protocol,
@@ -175,9 +175,9 @@ def packet_callback(packet, user_id, captured_packets):
                 user_id=user_id
             )
             db.session.add(capture)
-            
+
             captured_packets.append(packet_data)
-            
+
     except Exception as e:
         print(f"Error processing packet: {e}")
 
@@ -185,23 +185,23 @@ def packet_callback(packet, user_id, captured_packets):
 def start_packet_capture(protocol='all', count=100, timeout=10, user_id=None):
     """
     Start capturing network packets
-    
+
     Args:
         protocol: Protocol filter (tcp, udp, ip, icmp, or all)
         count: Number of packets to capture
         timeout: Capture timeout in seconds
         user_id: User ID for database storage
-    
+
     Returns:
         List of captured packet data
-        
+
     Raises:
         PermissionError: If the process doesn't have sufficient permissions
         RuntimeError: If packet capture fails for other reasons
     """
     from config import Config
     captured_packets = []
-    
+
     # Build filter string
     filter_str = None
     if protocol.lower() == 'tcp':
@@ -212,10 +212,7 @@ def start_packet_capture(protocol='all', count=100, timeout=10, user_id=None):
         filter_str = 'icmp'
     elif protocol.lower() == 'ip':
         filter_str = 'ip'
-    
-    # Get configured interface
-    iface = Config.CAPTURE_INTERFACE if hasattr(Config, 'CAPTURE_INTERFACE') else None
-    
+
     try:
         # Capture packets
         # Note: This requires root/admin privileges
@@ -225,12 +222,12 @@ def start_packet_capture(protocol='all', count=100, timeout=10, user_id=None):
             count=count,
             timeout=timeout,
             store=False,
-            iface=iface
+            iface="Intel(R) Wi-Fi 6E AX211 160MHz"
         )
-        
+
         # Commit all captured packets to database
         db.session.commit()
-        
+
     except PermissionError as e:
         # Permission error - need elevated privileges
         logging.error(f"Packet capture permission denied: {e}")
@@ -246,7 +243,7 @@ def start_packet_capture(protocol='all', count=100, timeout=10, user_id=None):
         # Other errors
         logging.error(f"Packet capture error: {e}")
         raise RuntimeError(f"Packet capture failed: {str(e)}")
-    
+
     return captured_packets
 
 
@@ -254,7 +251,7 @@ def start_packet_capture(protocol='all', count=100, timeout=10, user_id=None):
 def get_protocol_stats(user_id, start_time):
     """Get statistics about captured packets by protocol"""
     from sqlalchemy import func
-    
+
     # Query packet counts by protocol
     protocol_counts = db.session.query(
         PacketCapture.protocol,
@@ -264,13 +261,13 @@ def get_protocol_stats(user_id, start_time):
         PacketCapture.user_id == user_id,
         PacketCapture.timestamp >= start_time
     ).group_by(PacketCapture.protocol).all()
-    
+
     stats = {
         'protocols': [],
         'total_packets': 0,
         'total_bytes': 0
     }
-    
+
     for proto, count, total_bytes in protocol_counts:
         stats['protocols'].append({
             'protocol': proto,
@@ -279,5 +276,5 @@ def get_protocol_stats(user_id, start_time):
         })
         stats['total_packets'] += count
         stats['total_bytes'] += total_bytes or 0
-    
+
     return stats
