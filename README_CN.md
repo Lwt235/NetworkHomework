@@ -79,6 +79,11 @@ NetworkHomework/
 │   ├── config.py              # 配置文件
 │   ├── models.py              # 数据库模型
 │   ├── requirements.txt       # Python依赖
+│   ├── init_db.py             # 数据库初始化脚本
+│   ├── create_db_postgresql.sql # PostgreSQL数据库创建脚本
+│   ├── create_db_mysql.sql    # MySQL数据库创建脚本
+│   ├── DATABASE_SETUP.md      # 数据库设置指南
+│   ├── DB_QUICK_REFERENCE.md  # 数据库快速参考
 │   ├── routes/                # API路由
 │   │   ├── auth.py           # 认证相关路由
 │   │   ├── devices.py        # 设备管理路由
@@ -132,19 +137,32 @@ chmod +x start.sh
 
 ### 方法2: 手动启动
 
-#### 启动后端
+#### 步骤1: 初始化数据库
 
 ```bash
 cd backend
 python3 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
+
+# 初始化数据库（创建表）
+python init_db.py init
+
+# 或查看数据库信息
+python init_db.py info
+```
+
+详细的数据库设置指南请参阅 [DATABASE_SETUP.md](backend/DATABASE_SETUP.md)
+
+#### 步骤2: 启动后端
+
+```bash
 python app.py
 ```
 
 后端将在 `http://localhost:5000` 启动
 
-#### 启动前端
+#### 步骤3: 启动前端
 
 ```bash
 cd frontend
@@ -153,6 +171,58 @@ npm run dev
 ```
 
 前端将在 `http://localhost:5173` 启动
+
+## 数据库设置
+
+本项目支持多种数据库系统：SQLite（默认）、PostgreSQL、MySQL。
+
+### SQLite（默认，无需额外配置）
+
+```bash
+cd backend
+python init_db.py init
+```
+
+### PostgreSQL（推荐用于生产环境）
+
+```bash
+# 1. 创建数据库
+sudo -u postgres psql -f create_db_postgresql.sql
+
+# 2. 配置环境变量（在 .env 文件中）
+DATABASE_URL=postgresql://network_monitor_user:password@localhost:5432/network_monitor
+
+# 3. 初始化表
+python init_db.py init
+```
+
+### MySQL
+
+```bash
+# 1. 创建数据库
+mysql -u root -p < create_db_mysql.sql
+
+# 2. 配置环境变量（在 .env 文件中）
+DATABASE_URL=mysql://network_monitor_user:password@localhost:3306/network_monitor
+
+# 3. 初始化表
+python init_db.py init
+```
+
+### 数据库管理命令
+
+```bash
+# 查看数据库信息
+python init_db.py info
+
+# 重置数据库（警告：删除所有数据）
+python init_db.py reset
+
+# 获取帮助
+python init_db.py help
+```
+
+详细说明请参阅 [backend/DATABASE_SETUP.md](backend/DATABASE_SETUP.md)
 
 ## 使用指南
 
