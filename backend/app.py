@@ -48,6 +48,10 @@ def create_app(config_class=Config):
 
 
 if __name__ == '__main__':
+    import os
     app = create_app()
     print("Starting Flask server on http://localhost:5000")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Debug mode should only be enabled in development
+    # In production, use a proper WSGI server like Gunicorn
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(host='0.0.0.0', port=5000, debug=debug_mode)
