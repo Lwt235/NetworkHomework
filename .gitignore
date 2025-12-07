@@ -24,6 +24,9 @@ wheels/
 *.egg
 *.log
 
+# Logs directory
+logs/
+
 # Virtual Environment
 venv/
 ENV/
