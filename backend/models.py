@@ -140,3 +140,32 @@ class PacketCapture(db.Model):
             'length': self.length,
             'info': self.info
         }
+
+
+class SystemResourceLog(db.Model):
+    """System resource usage log model for historical tracking"""
+    __tablename__ = 'system_resource_logs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    cpu_percent = db.Column(db.Float, default=0)
+    memory_percent = db.Column(db.Float, default=0)
+    memory_used = db.Column(db.BigInteger, default=0)
+    memory_total = db.Column(db.BigInteger, default=0)
+    disk_percent = db.Column(db.Float, default=0)
+    disk_used = db.Column(db.BigInteger, default=0)
+    disk_total = db.Column(db.BigInteger, default=0)
+    
+    def to_dict(self):
+        """Convert to dictionary"""
+        return {
+            'id': self.id,
+            'timestamp': self.timestamp.isoformat(),
+            'cpu_percent': self.cpu_percent,
+            'memory_percent': self.memory_percent,
+            'memory_used': self.memory_used,
+            'memory_total': self.memory_total,
+            'disk_percent': self.disk_percent,
+            'disk_used': self.disk_used,
+            'disk_total': self.disk_total
+        }

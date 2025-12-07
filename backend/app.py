@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from config import Config
 from models import db, bcrypt
+import atexit
 
 def create_app(config_class=Config):
     """Application factory"""
@@ -43,6 +44,10 @@ def create_app(config_class=Config):
     # Create database tables
     with app.app_context():
         db.create_all()
+        
+        # Initialize background monitoring
+        from services.background_tasks import init_background_monitor
+        init_background_monitor(app, config_class)
     
     return app
 
@@ -50,6 +55,11 @@ def create_app(config_class=Config):
 if __name__ == '__main__':
     import os
     app = create_app()
+    
+    # Register cleanup handler
+    from services.background_tasks import stop_background_monitor
+    atexit.register(stop_background_monitor)
+    
     print("Starting Flask server on http://localhost:5000")
     # Debug mode should only be enabled in development
     # In production, use a proper WSGI server like Gunicorn

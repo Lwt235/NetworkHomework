@@ -70,6 +70,14 @@
                   <span>上传速度:</span>
                   <strong>{{ speedTestResult.upload_speed }} Mbps</strong>
                 </div>
+                <div class="speed-item" v-if="speedTestResult.ping">
+                  <span>延迟(Ping):</span>
+                  <strong>{{ speedTestResult.ping }} ms</strong>
+                </div>
+                <div class="speed-item" v-if="speedTestResult.server_location">
+                  <span>测速服务器:</span>
+                  <strong class="server-location">{{ speedTestResult.server_location }}</strong>
+                </div>
               </div>
             </div>
           </div>
@@ -286,6 +294,10 @@ onUnmounted(() => {
 
 .speed-item:last-child {
   border-bottom: none;
+}
+
+.speed-item .server-location {
+  font-size: 12px;
 }
 
 .system-info {
