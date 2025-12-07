@@ -225,6 +225,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { monitoringAPI } from '@/services/api'
 import TrafficChart from '@/components/TrafficChart.vue'
+import { formatBytes, formatTime } from '@/utils/formatters'
 
 const trafficData = ref({
   bytes_sent: 0,
@@ -292,18 +293,6 @@ const loadHistory = async () => {
   } catch (error) {
     ElMessage.error('加载历史数据失败')
   }
-}
-
-const formatBytes = (bytes) => {
-  if (!bytes || bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
-}
-
-const formatTime = (timestamp) => {
-  return new Date(timestamp).toLocaleString('zh-CN')
 }
 
 onMounted(() => {

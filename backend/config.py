@@ -22,6 +22,11 @@ class Config:
     TRAFFIC_SAMPLE_INTERVAL = 1  # seconds
     MAX_HISTORY_RECORDS = 1000
     
+    # Network Load Monitoring
+    # Network capacity in Mbps for utilization calculation
+    # Default: 100 Mbps (adjust for your network: 1000 for gigabit, 10000 for 10G, etc.)
+    NETWORK_CAPACITY_MBPS = int(os.environ.get('NETWORK_CAPACITY_MBPS') or 100)
+    
     # Alerts
     CPU_THRESHOLD = 80  # percentage
     MEMORY_THRESHOLD = 80  # percentage

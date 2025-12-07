@@ -28,19 +28,26 @@ def get_network_load():
     Calculate current network load based on recent traffic
     Returns load metrics including bytes/second and utilization percentage
     """
+    from config import Config
     global _previous_net_io, _previous_timestamp
     
     current_net_io = psutil.net_io_counters()
     current_timestamp = time.time()
     
-    # If this is the first call, just store the values
+    # If this is the first call, initialize and return zeros
     if _previous_net_io is None or _previous_timestamp is None:
         _previous_net_io = current_net_io
         _previous_timestamp = current_timestamp
-        # Wait a bit to get meaningful data
-        time.sleep(1)
-        current_net_io = psutil.net_io_counters()
-        current_timestamp = time.time()
+        return {
+            'bytes_sent_per_sec': 0.0,
+            'bytes_recv_per_sec': 0.0,
+            'packets_sent_per_sec': 0.0,
+            'packets_recv_per_sec': 0.0,
+            'upload_utilization_percent': 0.0,
+            'download_utilization_percent': 0.0,
+            'total_utilization_percent': 0.0,
+            'timestamp': current_timestamp
+        }
     
     # Calculate time delta
     time_delta = current_timestamp - _previous_timestamp
@@ -56,9 +63,9 @@ def get_network_load():
     packets_sent_per_sec = (current_net_io.packets_sent - _previous_net_io.packets_sent) / time_delta
     packets_recv_per_sec = (current_net_io.packets_recv - _previous_net_io.packets_recv) / time_delta
     
-    # Estimate network utilization (assuming typical 100 Mbps network)
-    # This is a rough estimate - actual capacity varies by network
-    typical_capacity_bytes_per_sec = 100 * 1000 * 1000 / 8  # 100 Mbps in bytes/sec
+    # Get network capacity from config (in Mbps, convert to bytes/sec)
+    capacity_mbps = getattr(Config, 'NETWORK_CAPACITY_MBPS', 100)
+    typical_capacity_bytes_per_sec = capacity_mbps * 1000 * 1000 / 8
     
     upload_utilization = min(100, (bytes_sent_per_sec / typical_capacity_bytes_per_sec) * 100)
     download_utilization = min(100, (bytes_recv_per_sec / typical_capacity_bytes_per_sec) * 100)

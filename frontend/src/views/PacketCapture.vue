@@ -142,6 +142,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { analysisAPI } from '@/services/api'
+import { formatBytes, formatTime } from '@/utils/formatters'
 
 const captureForm = ref({
   protocol: 'all',
@@ -228,25 +229,6 @@ const getProtocolType = (protocol) => {
     'IP': 'info'
   }
   return types[protocol] || 'info'
-}
-
-const formatBytes = (bytes) => {
-  if (!bytes || bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
-}
-
-const formatTime = (timestamp) => {
-  return new Date(timestamp).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  })
 }
 
 onMounted(() => {
