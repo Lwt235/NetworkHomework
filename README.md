@@ -87,8 +87,18 @@ cd backend
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
+
+# Initialize database (create tables)
+python init_db.py init
+
+# Or view database information
+python init_db.py info
+
+# Start the backend server
 python app.py
 ```
+
+For detailed database setup instructions, see [DATABASE_SETUP.md](backend/DATABASE_SETUP.md)
 
 ### Frontend Setup
 
@@ -97,6 +107,58 @@ cd frontend
 npm install
 npm run dev
 ```
+
+## Database Setup
+
+This project supports multiple database systems: SQLite (default), PostgreSQL, and MySQL.
+
+### SQLite (Default, No Additional Configuration Required)
+
+```bash
+cd backend
+python init_db.py init
+```
+
+### PostgreSQL (Recommended for Production)
+
+```bash
+# 1. Create database
+sudo -u postgres psql -f create_db_postgresql.sql
+
+# 2. Configure environment variables (in .env file)
+DATABASE_URL=postgresql://network_monitor_user:password@localhost:5432/network_monitor
+
+# 3. Initialize tables
+python init_db.py init
+```
+
+### MySQL
+
+```bash
+# 1. Create database
+mysql -u root -p < create_db_mysql.sql
+
+# 2. Configure environment variables (in .env file)
+DATABASE_URL=mysql://network_monitor_user:password@localhost:3306/network_monitor
+
+# 3. Initialize tables
+python init_db.py init
+```
+
+### Database Management Commands
+
+```bash
+# View database information
+python init_db.py info
+
+# Reset database (WARNING: deletes all data)
+python init_db.py reset
+
+# Get help
+python init_db.py help
+```
+
+For detailed instructions, see [backend/DATABASE_SETUP.md](backend/DATABASE_SETUP.md)
 
 ## Usage
 

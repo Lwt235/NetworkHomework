@@ -13,16 +13,34 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-#### 2. 配置环境变量 / Configure Environment (可选 / Optional)
+#### 2. 配置环境变量 / Configure Environment
 
-创建 `.env` 文件:
+创建 `.env` 文件 / Create `.env` file:
+```bash
+cp .env.example .env
+```
+
+编辑 `.env` 文件 / Edit `.env` file:
 ```bash
 SECRET_KEY=your-secret-key-here
 JWT_SECRET_KEY=your-jwt-secret-key-here
 DATABASE_URL=sqlite:///network_monitor.db
 ```
 
-#### 3. 启动后端服务器 / Start Backend Server
+#### 3. 初始化数据库 / Initialize Database
+
+```bash
+# 查看数据库配置信息 / View database configuration
+python init_db.py info
+
+# 创建数据库表 / Create database tables
+python init_db.py init
+```
+
+详细的数据库设置指南请参阅 [DATABASE_SETUP.md](backend/DATABASE_SETUP.md)
+For detailed database setup instructions, see [DATABASE_SETUP.md](backend/DATABASE_SETUP.md)
+
+#### 4. 启动后端服务器 / Start Backend Server
 
 ```bash
 python app.py
@@ -31,7 +49,7 @@ python app.py
 后端服务器将在 `http://localhost:5000` 启动。
 Backend server will start at `http://localhost:5000`.
 
-#### 4. 测试后端 / Test Backend (可选 / Optional)
+#### 5. 测试后端 / Test Backend (可选 / Optional)
 
 ```bash
 python test_backend.py
@@ -179,14 +197,63 @@ sudo python app.py
 
 ### 数据库 / Database
 
-默认使用 SQLite。对于生产环境，建议使用 PostgreSQL 或 MySQL:
+默认使用 SQLite。对于生产环境，建议使用 PostgreSQL 或 MySQL。
+SQLite is used by default. For production environments, PostgreSQL or MySQL is recommended.
 
-```python
-# config.py
-SQLALCHEMY_DATABASE_URI = 'postgresql://user:password@localhost/network_monitor'
-# 或
-SQLALCHEMY_DATABASE_URI = 'mysql://user:password@localhost/network_monitor'
+#### SQLite (默认 / Default)
+```bash
+# 数据库文件将自动创建 / Database file will be created automatically
+DATABASE_URL=sqlite:///network_monitor.db
 ```
+
+#### PostgreSQL (推荐用于生产 / Recommended for Production)
+```bash
+# 1. 创建数据库 / Create database
+sudo -u postgres psql -f create_db_postgresql.sql
+
+# 2. 配置连接 / Configure connection
+DATABASE_URL=postgresql://network_monitor_user:password@localhost:5432/network_monitor
+
+# 3. 初始化表 / Initialize tables
+python init_db.py init
+```
+
+#### MySQL
+```bash
+# 1. 创建数据库 / Create database
+mysql -u root -p < create_db_mysql.sql
+
+# 2. 安装 MySQL 驱动 / Install MySQL driver
+pip install mysqlclient  # or PyMySQL
+
+# 3. 配置连接 / Configure connection
+DATABASE_URL=mysql://network_monitor_user:password@localhost:3306/network_monitor
+
+# 4. 初始化表 / Initialize tables
+python init_db.py init
+```
+
+#### 数据库管理 / Database Management
+```bash
+# 查看数据库信息 / View database info
+python init_db.py info
+
+# 重置数据库 / Reset database (WARNING: deletes all data)
+python init_db.py reset
+
+# 备份数据库 / Backup database
+# SQLite
+cp network_monitor.db network_monitor.db.backup
+
+# PostgreSQL
+pg_dump -U network_monitor_user network_monitor > backup.sql
+
+# MySQL
+mysqldump -u network_monitor_user -p network_monitor > backup.sql
+```
+
+详细说明请参阅 [backend/DATABASE_SETUP.md](backend/DATABASE_SETUP.md)
+For detailed instructions, see [backend/DATABASE_SETUP.md](backend/DATABASE_SETUP.md)
 
 ## 故障排除 / Troubleshooting
 
