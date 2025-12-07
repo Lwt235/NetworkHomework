@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 from services.monitor import get_network_traffic, get_system_stats
 from services.analytics import create_alert
-from models import db, TrafficLog
+from models import db, TrafficLog, SystemResourceLog, User, Alert
 
 
 class BackgroundMonitor:
@@ -80,7 +80,6 @@ class BackgroundMonitor:
                 
                 # Also log system resource data
                 system_stats = get_system_stats()
-                from models import SystemResourceLog
                 
                 resource_entry = SystemResourceLog(
                     timestamp=datetime.utcnow(),
@@ -106,7 +105,6 @@ class BackgroundMonitor:
                 system_stats = get_system_stats()
                 
                 # Get all users to create alerts for
-                from models import User
                 users = User.query.all()
                 
                 for user in users:
@@ -142,8 +140,6 @@ class BackgroundMonitor:
     
     def _create_threshold_alert(self, user_id, alert_type, message, severity):
         """Create an alert if one doesn't already exist for this threshold"""
-        from models import Alert
-        
         # Check if there's already an active alert of this type for this user
         existing_alert = Alert.query.filter_by(
             user_id=user_id,

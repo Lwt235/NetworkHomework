@@ -76,7 +76,7 @@
                 </div>
                 <div class="speed-item" v-if="speedTestResult.server_location">
                   <span>测速服务器:</span>
-                  <strong style="font-size: 12px;">{{ speedTestResult.server_location }}</strong>
+                  <strong class="server-location">{{ speedTestResult.server_location }}</strong>
                 </div>
               </div>
             </div>
@@ -294,6 +294,10 @@ onUnmounted(() => {
 
 .speed-item:last-child {
   border-bottom: none;
+}
+
+.speed-item .server-location {
+  font-size: 12px;
 }
 
 .system-info {

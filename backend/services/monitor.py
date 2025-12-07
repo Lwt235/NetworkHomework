@@ -89,9 +89,11 @@ def run_speed_test():
             'server_location': f"{st.results.server.get('name', 'Unknown')}, {st.results.server.get('country', 'Unknown')}"
         }
     except Exception as e:
-        # Fallback to network activity measurement if speedtest fails
-        # This is a backup method and won't be as accurate but ensures functionality
-        raise RuntimeError(f"Speed test failed: {str(e)}. Please check your internet connection.")
+        # Log the detailed error for debugging
+        import logging
+        logging.error(f"Speed test error: {str(e)}")
+        # Raise a user-friendly error
+        raise RuntimeError("Speed test failed. Please check your internet connection and try again.")
 
 
 def check_thresholds(config):
