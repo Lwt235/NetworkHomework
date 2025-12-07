@@ -51,6 +51,58 @@
     </el-row>
     
     <el-row :gutter="20" style="margin-top: 20px;">
+      <el-col :span="24">
+        <el-card>
+          <template #header>
+            <div class="card-header">
+              <span>网络负载</span>
+              <el-button type="primary" @click="refreshNetworkLoad" size="small">刷新</el-button>
+            </div>
+          </template>
+          <div v-if="networkLoad" class="network-load">
+            <el-row :gutter="20">
+              <el-col :span="8">
+                <div class="load-stat">
+                  <h4>上传速率</h4>
+                  <div class="value">{{ formatBytes(networkLoad.bytes_sent_per_sec) }}/s</div>
+                  <el-progress :percentage="networkLoad.upload_utilization_percent" :color="getLoadColor(networkLoad.upload_utilization_percent)" />
+                </div>
+              </el-col>
+              <el-col :span="8">
+                <div class="load-stat">
+                  <h4>下载速率</h4>
+                  <div class="value">{{ formatBytes(networkLoad.bytes_recv_per_sec) }}/s</div>
+                  <el-progress :percentage="networkLoad.download_utilization_percent" :color="getLoadColor(networkLoad.download_utilization_percent)" />
+                </div>
+              </el-col>
+              <el-col :span="8">
+                <div class="load-stat">
+                  <h4>总体利用率</h4>
+                  <div class="value">{{ networkLoad.total_utilization_percent }}%</div>
+                  <el-progress :percentage="networkLoad.total_utilization_percent" :color="getLoadColor(networkLoad.total_utilization_percent)" />
+                </div>
+              </el-col>
+            </el-row>
+            <el-row :gutter="20" style="margin-top: 20px;">
+              <el-col :span="12">
+                <div class="sub-stat">
+                  <span>发送数据包速率:</span>
+                  <strong>{{ networkLoad.packets_sent_per_sec.toFixed(2) }} 包/秒</strong>
+                </div>
+              </el-col>
+              <el-col :span="12">
+                <div class="sub-stat">
+                  <span>接收数据包速率:</span>
+                  <strong>{{ networkLoad.packets_recv_per_sec.toFixed(2) }} 包/秒</strong>
+                </div>
+              </el-col>
+            </el-row>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+    
+    <el-row :gutter="20" style="margin-top: 20px;">
       <el-col :span="12">
         <el-card>
           <template #header>
@@ -60,6 +112,11 @@
             <el-button type="primary" @click="runSpeedTest" :loading="testingSpeed">
               {{ testingSpeed ? '测试中...' : '开始测速' }}
             </el-button>
+            <div v-if="speedTestError" class="error-message">
+              <el-alert type="error" :closable="false" style="margin-top: 10px;">
+                {{ speedTestError }}
+              </el-alert>
+            </div>
             <div v-if="speedTestResult" style="margin-top: 20px;">
               <div class="speed-result">
                 <div class="speed-item">
@@ -168,6 +225,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { monitoringAPI } from '@/services/api'
 import TrafficChart from '@/components/TrafficChart.vue'
+import { formatBytes, formatTime } from '@/utils/formatters'
 
 const trafficData = ref({
   bytes_sent: 0,
@@ -177,7 +235,9 @@ const trafficData = ref({
 })
 const systemData = ref(null)
 const speedTestResult = ref(null)
+const speedTestError = ref(null)
 const testingSpeed = ref(false)
+const networkLoad = ref(null)
 const historyData = ref([])
 const chartHours = ref(6)
 let refreshInterval = null
@@ -194,17 +254,36 @@ const refreshData = async () => {
   }
 }
 
+const refreshNetworkLoad = async () => {
+  try {
+    const response = await monitoringAPI.getNetworkLoad()
+    networkLoad.value = response.data.load
+  } catch (error) {
+    console.error('Failed to refresh network load:', error)
+  }
+}
+
 const runSpeedTest = async () => {
   testingSpeed.value = true
+  speedTestError.value = null
+  speedTestResult.value = null
   try {
     const response = await monitoringAPI.runSpeedTest()
     speedTestResult.value = response.data.results
     ElMessage.success('测速完成')
   } catch (error) {
-    ElMessage.error('测速失败')
+    const errorMsg = error.response?.data?.error || '测速失败，请检查网络连接'
+    speedTestError.value = errorMsg
+    ElMessage.error(errorMsg)
   } finally {
     testingSpeed.value = false
   }
+}
+
+const getLoadColor = (percentage) => {
+  if (percentage < 50) return '#67c23a'
+  if (percentage < 80) return '#e6a23c'
+  return '#f56c6c'
 }
 
 const loadHistory = async () => {
@@ -216,22 +295,14 @@ const loadHistory = async () => {
   }
 }
 
-const formatBytes = (bytes) => {
-  if (!bytes || bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
-}
-
-const formatTime = (timestamp) => {
-  return new Date(timestamp).toLocaleString('zh-CN')
-}
-
 onMounted(() => {
   refreshData()
   loadHistory()
-  refreshInterval = setInterval(refreshData, 5000)
+  refreshNetworkLoad()
+  refreshInterval = setInterval(() => {
+    refreshData()
+    refreshNetworkLoad()
+  }, 5000)
 })
 
 onUnmounted(() => {
@@ -313,5 +384,39 @@ onUnmounted(() => {
 
 .info-item:last-child {
   border-bottom: none;
+}
+
+.network-load {
+  padding: 20px;
+}
+
+.load-stat {
+  text-align: center;
+  padding: 10px;
+}
+
+.load-stat h4 {
+  margin: 0 0 10px 0;
+  color: #606266;
+  font-size: 16px;
+}
+
+.load-stat .value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #409eff;
+  margin-bottom: 10px;
+}
+
+.sub-stat {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: #f5f7fa;
+  border-radius: 4px;
+}
+
+.error-message {
+  margin-top: 10px;
 }
 </style>

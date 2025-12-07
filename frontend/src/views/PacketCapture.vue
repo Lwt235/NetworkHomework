@@ -24,8 +24,14 @@
           <el-input-number v-model="captureForm.timeout" :min="5" :max="60" />
         </el-form-item>
         <el-form-item>
+          <el-checkbox v-model="captureForm.clearPrevious">清除之前的抓包</el-checkbox>
+        </el-form-item>
+        <el-form-item>
           <el-button type="primary" @click="startCapture" :loading="capturing">
             {{ capturing ? '抓取中...' : '开始抓包' }}
+          </el-button>
+          <el-button type="danger" @click="clearAllPackets" :loading="clearing">
+            清除所有抓包
           </el-button>
         </el-form-item>
       </el-form>
@@ -77,7 +83,7 @@
         <span>协议统计</span>
       </template>
       
-      <div v-if="stats && stats.protocols" class="stats-grid">
+      <div v-if="stats && stats.protocols && stats.protocols.length > 0" class="stats-grid">
         <div v-for="proto in stats.protocols" :key="proto.protocol" class="stat-item">
           <div class="stat-protocol">{{ proto.protocol }}</div>
           <div class="stat-count">数据包: {{ proto.count }}</div>
@@ -86,6 +92,49 @@
       </div>
       <el-empty v-else description="暂无统计数据" :image-size="80" />
     </el-card>
+    
+    <el-card style="margin-top: 20px;" v-if="analysis">
+      <template #header>
+        <span>深度分析</span>
+      </template>
+      
+      <el-row :gutter="20">
+        <el-col :span="8">
+          <h4>Top 源IP地址</h4>
+          <el-table :data="analysis.top_source_ips" style="width: 100%" max-height="300" size="small">
+            <el-table-column prop="ip" label="IP地址" />
+            <el-table-column prop="packet_count" label="包数" width="80" />
+            <el-table-column label="字节数" width="100">
+              <template #default="{ row }">
+                {{ formatBytes(row.total_bytes) }}
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-col>
+        
+        <el-col :span="8">
+          <h4>Top 目标IP地址</h4>
+          <el-table :data="analysis.top_destination_ips" style="width: 100%" max-height="300" size="small">
+            <el-table-column prop="ip" label="IP地址" />
+            <el-table-column prop="packet_count" label="包数" width="80" />
+            <el-table-column label="字节数" width="100">
+              <template #default="{ row }">
+                {{ formatBytes(row.total_bytes) }}
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-col>
+        
+        <el-col :span="8">
+          <h4>Top 目标端口</h4>
+          <el-table :data="analysis.top_destination_ports" style="width: 100%" max-height="300" size="small">
+            <el-table-column prop="port" label="端口" width="80" />
+            <el-table-column prop="service" label="服务" />
+            <el-table-column prop="packet_count" label="包数" width="80" />
+          </el-table>
+        </el-col>
+      </el-row>
+    </el-card>
   </div>
 </template>
 
@@ -93,29 +142,56 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { analysisAPI } from '@/services/api'
+import { formatBytes, formatTime } from '@/utils/formatters'
 
 const captureForm = ref({
   protocol: 'all',
   count: 100,
-  timeout: 10
+  timeout: 10,
+  clearPrevious: true
 })
 const capturing = ref(false)
+const clearing = ref(false)
 const loading = ref(false)
 const packets = ref([])
 const filterProtocol = ref('')
 const stats = ref(null)
+const analysis = ref(null)
 
 const startCapture = async () => {
   capturing.value = true
   try {
-    const response = await analysisAPI.capturePackets(captureForm.value)
+    const response = await analysisAPI.capturePackets({
+      protocol: captureForm.value.protocol,
+      count: captureForm.value.count,
+      timeout: captureForm.value.timeout,
+      clear_previous: captureForm.value.clearPrevious
+    })
     packets.value = response.data.packets
-    ElMessage.success(`成功捕获 ${response.data.count} 个数据包`)
+    const message = captureForm.value.clearPrevious 
+      ? `成功捕获 ${response.data.count} 个数据包（已清除旧数据）`
+      : `成功捕获 ${response.data.count} 个数据包`
+    ElMessage.success(message)
     loadStats()
   } catch (error) {
     ElMessage.error(error.response?.data?.error || '数据包捕获失败')
   } finally {
     capturing.value = false
+  }
+}
+
+const clearAllPackets = async () => {
+  clearing.value = true
+  try {
+    const response = await analysisAPI.clearPackets()
+    ElMessage.success(`已清除 ${response.data.deleted_count} 个数据包`)
+    packets.value = []
+    stats.value = null
+    analysis.value = null
+  } catch (error) {
+    ElMessage.error('清除数据包失败')
+  } finally {
+    clearing.value = false
   }
 }
 
@@ -139,6 +215,7 @@ const loadStats = async () => {
   try {
     const response = await analysisAPI.getStats({ hours: 24 })
     stats.value = response.data.stats
+    analysis.value = response.data.analysis
   } catch (error) {
     console.error('Failed to load stats:', error)
   }
@@ -152,25 +229,6 @@ const getProtocolType = (protocol) => {
     'IP': 'info'
   }
   return types[protocol] || 'info'
-}
-
-const formatBytes = (bytes) => {
-  if (!bytes || bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
-}
-
-const formatTime = (timestamp) => {
-  return new Date(timestamp).toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  })
 }
 
 onMounted(() => {

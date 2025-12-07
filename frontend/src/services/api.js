@@ -55,7 +55,8 @@ export const devicesAPI = {
 export const monitoringAPI = {
   getTraffic: () => apiClient.get('/monitoring/traffic'),
   getSystem: () => apiClient.get('/monitoring/system'),
-  runSpeedTest: () => apiClient.post('/monitoring/speed-test'),
+  runSpeedTest: () => apiClient.post('/monitoring/speed-test', {}, { timeout: 120000 }), // 120 second timeout for speed test
+  getNetworkLoad: () => apiClient.get('/monitoring/network-load'),
   getHistory: (params) => apiClient.get('/monitoring/history', { params }),
   getSystemHistory: (params) => apiClient.get('/monitoring/system-history', { params }),
   getAlerts: (params) => apiClient.get('/monitoring/alerts', { params }),
@@ -67,7 +68,8 @@ export const analysisAPI = {
   capturePackets: (data) => apiClient.post('/analysis/capture', data),
   getPackets: (params) => apiClient.get('/analysis/packets', { params }),
   getStats: (params) => apiClient.get('/analysis/stats', { params }),
-  getProtocols: () => apiClient.get('/analysis/protocols')
+  getProtocols: () => apiClient.get('/analysis/protocols'),
+  clearPackets: () => apiClient.delete('/analysis/clear-packets')
 }
 
 export default apiClient

@@ -278,3 +278,82 @@ def get_protocol_stats(user_id, start_time):
         stats['total_bytes'] += total_bytes or 0
 
     return stats
+
+
+def get_packet_analysis(user_id, start_time):
+    """
+    Get detailed packet analysis including:
+    - Top source IPs
+    - Top destination IPs
+    - Top ports
+    - Protocol distribution
+    - Traffic patterns
+    """
+    from sqlalchemy import func, desc
+    
+    # Get top source IPs
+    top_src_ips = db.session.query(
+        PacketCapture.src_ip,
+        func.count(PacketCapture.id).label('count'),
+        func.sum(PacketCapture.length).label('bytes')
+    ).filter(
+        PacketCapture.user_id == user_id,
+        PacketCapture.timestamp >= start_time,
+        PacketCapture.src_ip.isnot(None)
+    ).group_by(PacketCapture.src_ip).order_by(desc('count')).limit(10).all()
+    
+    # Get top destination IPs
+    top_dst_ips = db.session.query(
+        PacketCapture.dst_ip,
+        func.count(PacketCapture.id).label('count'),
+        func.sum(PacketCapture.length).label('bytes')
+    ).filter(
+        PacketCapture.user_id == user_id,
+        PacketCapture.timestamp >= start_time,
+        PacketCapture.dst_ip.isnot(None)
+    ).group_by(PacketCapture.dst_ip).order_by(desc('count')).limit(10).all()
+    
+    # Get top destination ports
+    top_dst_ports = db.session.query(
+        PacketCapture.dst_port,
+        func.count(PacketCapture.id).label('count')
+    ).filter(
+        PacketCapture.user_id == user_id,
+        PacketCapture.timestamp >= start_time,
+        PacketCapture.dst_port.isnot(None)
+    ).group_by(PacketCapture.dst_port).order_by(desc('count')).limit(10).all()
+    
+    # Common port names for reference
+    common_ports = {
+        20: 'FTP-Data', 21: 'FTP', 22: 'SSH', 23: 'Telnet',
+        25: 'SMTP', 53: 'DNS', 80: 'HTTP', 110: 'POP3',
+        143: 'IMAP', 443: 'HTTPS', 3306: 'MySQL', 5432: 'PostgreSQL',
+        3389: 'RDP', 8080: 'HTTP-Alt', 8443: 'HTTPS-Alt'
+    }
+    
+    return {
+        'top_source_ips': [
+            {
+                'ip': ip,
+                'packet_count': count,
+                'total_bytes': bytes or 0
+            }
+            for ip, count, bytes in top_src_ips
+        ],
+        'top_destination_ips': [
+            {
+                'ip': ip,
+                'packet_count': count,
+                'total_bytes': bytes or 0
+            }
+            for ip, count, bytes in top_dst_ips
+        ],
+        'top_destination_ports': [
+            {
+                'port': port,
+                'service': common_ports.get(port, 'Unknown'),
+                'packet_count': count
+            }
+            for port, count in top_dst_ports
+        ]
+    }
