@@ -63,9 +63,12 @@ def run_speed_test():
     Run a simple network speed test
     Note: This measures current network activity over a longer period for better accuracy
     """
-    # Measure over 5 seconds for more accurate results
+    # Measurement duration in seconds
+    MEASUREMENT_DURATION = 5
+    
+    # Measure network traffic over the specified duration
     net_io_start = psutil.net_io_counters()
-    time.sleep(5)
+    time.sleep(MEASUREMENT_DURATION)
     net_io_end = psutil.net_io_counters()
     
     bytes_sent = net_io_end.bytes_sent - net_io_start.bytes_sent
@@ -73,14 +76,14 @@ def run_speed_test():
     
     # Convert to Mbps (bits per second divided by 1,000,000)
     # Formula: (bytes * 8) / (time_in_seconds * 1,000,000)
-    download_speed = (bytes_recv * 8) / (5 * 1000 * 1000)  # Mbps
-    upload_speed = (bytes_sent * 8) / (5 * 1000 * 1000)  # Mbps
+    download_speed = (bytes_recv * 8) / (MEASUREMENT_DURATION * 1000 * 1000)  # Mbps
+    upload_speed = (bytes_sent * 8) / (MEASUREMENT_DURATION * 1000 * 1000)  # Mbps
     
     return {
         'download_speed': round(download_speed, 2),
         'upload_speed': round(upload_speed, 2),
         'unit': 'Mbps',
-        'measurement_duration': 5
+        'measurement_duration': MEASUREMENT_DURATION
     }
 
 

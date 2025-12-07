@@ -171,7 +171,6 @@ const systemData = ref(null)
 const speedTestResult = ref(null)
 const testingSpeed = ref(false)
 const historyData = ref([])
-const historyHours = ref(24)
 const chartHours = ref(6)
 let refreshInterval = null
 

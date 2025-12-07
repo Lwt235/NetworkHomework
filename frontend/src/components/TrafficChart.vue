@@ -46,20 +46,23 @@ const props = defineProps({
 })
 
 const chartData = computed(() => {
-  const labels = props.historyData.map(item => {
+  // Reverse the array once at the beginning for efficiency
+  const reversedData = [...props.historyData].reverse()
+  
+  const labels = reversedData.map(item => {
     const date = new Date(item.timestamp)
     return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-  }).reverse()
+  })
 
-  const uploadData = props.historyData.map(item => {
+  const uploadData = reversedData.map(item => {
     // Convert bytes to MB
     return (item.bytes_sent / (1024 * 1024)).toFixed(2)
-  }).reverse()
+  })
 
-  const downloadData = props.historyData.map(item => {
+  const downloadData = reversedData.map(item => {
     // Convert bytes to MB
     return (item.bytes_recv / (1024 * 1024)).toFixed(2)
-  }).reverse()
+  })
 
   return {
     labels,
