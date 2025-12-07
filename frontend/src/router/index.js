@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
-import Layout from '../views/Layout.vue'
+import Dashboard from '../views/Dashboard.vue'
 
 const routes = [
   {
@@ -16,35 +16,9 @@ const routes = [
   },
   {
     path: '/',
-    component: Layout,
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: '',
-        name: 'Dashboard',
-        component: Layout
-      },
-      {
-        path: 'devices',
-        name: 'Devices',
-        component: Layout
-      },
-      {
-        path: 'monitoring',
-        name: 'Monitoring',
-        component: Layout
-      },
-      {
-        path: 'packet-capture',
-        name: 'PacketCapture',
-        component: Layout
-      },
-      {
-        path: 'analytics',
-        name: 'Analytics',
-        component: Layout
-      }
-    ]
+    name: 'Dashboard',
+    component: Dashboard,
+    meta: { requiresAuth: true }
   }
 ]
 

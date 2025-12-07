@@ -75,13 +75,6 @@
           </div>
         </el-card>
       </el-col>
-                  <strong>{{ speedTestResult.upload_speed }} Mbps</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
       
       <el-col :span="12">
         <el-card>
@@ -213,8 +206,6 @@ const loadHistory = async () => {
     historyData.value = response.data.history
   } catch (error) {
     ElMessage.error('加载历史数据失败')
-  }
-}
   }
 }
 
